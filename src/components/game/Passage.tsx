@@ -12,17 +12,55 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
   const [displayText, setDisplayText] = useState('');
   const textIndexRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const previousTextRef = useRef<string>(''); // Track previous text to prevent duplicate animations
+  const isAnimatingRef = useRef<boolean>(false); // Track if animation is currently running
+  const completedTextRef = useRef<string>(''); // Track the text that was completed
 
   // 当passage.text改变时，重新开始动画
   useEffect(() => {
+    console.log('=== PASSAGE USEEFFECT TRIGGERED ===');
+    console.log('Trigger timestamp:', Date.now());
+    console.log('Previous text ref:', previousTextRef.current);
+    console.log('New passage text:', passage?.text);
+    console.log('Current display text:', displayText);
+    console.log('Is animating ref:', isAnimatingRef.current);
+    
+    // 更智能的文本变化检测
+    const newText = passage?.text || '';
+    const oldText = previousTextRef.current;
+    
+    // 检查是否应该开始动画：
+    // 1. 如果文本内容不同，应该开始动画
+    // 2. 如果文本内容相同但之前没有完成动画，也应该开始动画
+    // 3. 如果文本内容相同且已完成动画，则跳过
+    if (newText === oldText && completedTextRef.current === newText && newText !== '') {
+      console.log('Text content unchanged and already completed, skipping animation restart');
+      return;
+    }
+    
+    if (newText === oldText && completedTextRef.current !== newText) {
+      console.log('Text content unchanged but not completed, allowing animation to restart');
+    }
+    
+    // 重置完成状态
+    completedTextRef.current = '';
+    
+    // 更新之前的文本引用
+    previousTextRef.current = newText;
+    
+    console.log('Text changed or first load, starting animation');
+    console.log('Passage object:', passage);
+    
     // 清除之前的定时器
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      isAnimatingRef.current = false;
     }
     
     // 重置状态
     setDisplayText('');
     textIndexRef.current = 0;
+    isAnimatingRef.current = true;
     
     // 增强调试信息
     console.log('=== PASSAGE DEBUG INFO ===');
@@ -32,6 +70,7 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
     console.log('Passage text length:', passage?.text?.length);
     console.log('Text as array:', passage?.text ? Array.from(passage.text) : 'N/A');
     console.log('Current display index:', textIndexRef.current);
+    console.log('Is animating:', isAnimatingRef.current);
     
     // 开始逐字显示动画 - 确保文本存在且有效
     if (passage?.text && typeof passage.text === 'string' && passage.text.trim().length > 0) {
@@ -72,7 +111,12 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
           console.log('Animation complete at index:', textIndexRef.current);
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
+            isAnimatingRef.current = false;
           }
+          // 标记文本已完成
+          completedTextRef.current = cleanText;
+          console.log('Marked text as completed:', completedTextRef.current);
+          
           // 通知文本显示完成
           if (onTextComplete) {
             onTextComplete();
@@ -82,6 +126,8 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
     } else {
       // 如果没有有效文本，直接标记为完成
       console.log('No valid text found, completing immediately');
+      isAnimatingRef.current = false;
+      completedTextRef.current = ''; // 重置完成状态
       if (onTextComplete) {
         onTextComplete();
       }
@@ -89,8 +135,10 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
     
     // 清理函数
     return () => {
+      console.log('=== PASSAGE USEEFFECT CLEANUP ===');
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        isAnimatingRef.current = false;
       }
     };
   }, [passage?.text, onTextComplete, textSpeed]); // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,7 +146,9 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
   return (
     <div id="passage">
       <div className="passage-text">
-        <p>{displayText || (passage?.text ? '加载中...' : '等待场景加载...')}</p>
+        <p>
+          {displayText || (passage?.text && displayText === '' ? '加载中...' : '等待场景加载...')}
+        </p>
       </div>
     </div>
   );

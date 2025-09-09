@@ -143,6 +143,7 @@ const GameApp: React.FC = () => {
   console.log('Current passage object:', currentPassage);
   console.log('Available passages:', Object.keys(passages));
   console.log('Passages data:', passages);
+  console.log('Passages reference changed:', Date.now()); // Add timestamp to track changes
   
   // 当前规则纸张
   const currentPaper = papers[currentPaperIndex];
@@ -427,6 +428,7 @@ const GameApp: React.FC = () => {
     
     // 更新段落数据状态
     console.log('Setting new passages:', newPassages);
+    console.log('Passages update timestamp:', Date.now());
     setPassages(newPassages);
     // 将当前段落ID设置为第一个节点
     const firstNodeId = Object.keys(mapping.nodes)[0];
