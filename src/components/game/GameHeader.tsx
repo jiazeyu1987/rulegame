@@ -4,9 +4,10 @@ import type { GameState } from '../../types/game';
 interface GameHeaderProps {
   gameState: GameState;
   onChangeProfession: () => void;
+  onOpenSettings: () => void;
 }
 
-const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession }) => {
+const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings }) => {
   // 格式化时间显示
   const formatTime = (time: number): string => {
     const hours = Math.floor(time);
@@ -27,6 +28,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession }
         <div className="time-display" id="time-display">
           {formatTime(gameState.time)}
         </div>
+        <button 
+          className="settings-button" 
+          id="settings-button"
+          onClick={onOpenSettings}
+          title="游戏设置"
+        >
+          ⚙️
+        </button>
       </div>
       <div className="stats-container">
         <div className="stat-item">

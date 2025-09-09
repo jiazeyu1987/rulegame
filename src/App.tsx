@@ -7,6 +7,7 @@ import ClearRules from './components/rules/ClearRules';
 import PassageComponent from './components/game/Passage';
 import Choices from './components/game/Choices';
 import TestWindow from './components/game/TestWindow';
+import SettingsModal from './components/settings/SettingsModal';
 
 // 初始游戏状态
 const initialGameState: GameState = {
@@ -136,18 +137,45 @@ const GameApp: React.FC = () => {
   // 当前段落
   const currentPassage = passages[currentPassageId];
   
+  // 调试：显示当前段落信息
+  console.log('=== APP DEBUG INFO ===');
+  console.log('Current passage ID:', currentPassageId);
+  console.log('Current passage object:', currentPassage);
+  console.log('Available passages:', Object.keys(passages));
+  console.log('Passages data:', passages);
+  
   // 当前规则纸张
   const currentPaper = papers[currentPaperIndex];
   
-  // 组件挂载时加载保存的故事
+  // 场景文字是否显示完成
+  const [isPassageTextComplete, setIsPassageTextComplete] = useState(false);
+  
+  // 文字显示速度（毫秒每字符）
+  const [textSpeed, setTextSpeed] = useState<number>(50); // 默认50ms每字符
+  
+  // 设置面板是否显示
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  
+  // 组件挂载时加载保存的故事和设置
   useEffect(() => {
+    // 加载保存的文字速度
+    const savedTextSpeed = localStorage.getItem('textSpeed');
+    if (savedTextSpeed) {
+      const speed = parseInt(savedTextSpeed, 10);
+      if (!isNaN(speed) && speed > 0) {
+        setTextSpeed(speed);
+      }
+    }
+    
     // 从localStorage获取上次保存的故事内容
     const lastStoryContent = localStorage.getItem('lastStoryContent');
-    if (lastStoryContent) {
-      // 如果有保存的故事内容，自动加载
-      handleTestSubmit(lastStoryContent);
+    if (lastStoryContent && lastStoryContent.trim()) {
+      // 如果有保存的故事内容，自动加载（延迟执行避免双刷新）
+      setTimeout(() => {
+        handleTestSubmit(lastStoryContent);
+      }, 100);
     }
-  }, []);
+  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
   
   // 改变职业
   const changeProfession = () => {
@@ -157,6 +185,23 @@ const GameApp: React.FC = () => {
       ...prev,
       profession: professions[nextIndex]
     }));
+  };
+  
+  // 打开设置面板
+  const openSettings = () => {
+    setShowSettings(true);
+  };
+  
+  // 关闭设置面板
+  const closeSettings = () => {
+    setShowSettings(false);
+  };
+  
+  // 改变文字速度
+  const changeTextSpeed = (speed: number) => {
+    setTextSpeed(speed);
+    // 保存到localStorage
+    localStorage.setItem('textSpeed', speed.toString());
   };
   
   // 切换规则标记
@@ -221,6 +266,9 @@ const GameApp: React.FC = () => {
       findRulePaper(4); // 发现规则纸张4
     }
     
+    // 重置场景文字完成状态
+    setIsPassageTextComplete(false);
+    
     // 更新游戏状态
     setGameState(prev => {
       let newTime = prev.time + (choice.timeChange || 0);
@@ -269,7 +317,7 @@ const GameApp: React.FC = () => {
     // 提取节点和连接信息
     for (const line of lines) {
       // 匹配节点定义: N1["节点1：卧室醒来"]
-      const nodeMatch = line.match(/([A-Z0-9_]+)\[\"(.+?)\"\]/);
+      const nodeMatch = line.match(/([A-Z0-9_]+)\["(.+?)"\]/);
       if (nodeMatch) {
         const nodeId = nodeMatch[1];
         const nodeLabel = nodeMatch[2];
@@ -277,7 +325,7 @@ const GameApp: React.FC = () => {
       }
       
       // 匹配连接关系: N1 -->|"看纸条"| N2
-      const connectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*\|\"(.+?)\"\|\s*([A-Z0-9_]+)/);
+      const connectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*\|"(.+?)"\|\s*([A-Z0-9_]+)/);
       if (connectionMatch) {
         // 去除条件中的双引号
         const condition = connectionMatch[2].replace(/^"(.+(?="$))"$/, '$1');
@@ -308,13 +356,30 @@ const GameApp: React.FC = () => {
   
   // 根据解析结果更新游戏段落数据
   const updatePassagesFromMapping = (mapping: {nodes: Record<string, string>, connections: Array<{from: string, to: string, condition: string}>}) => {
+    console.log('=== UPDATE PASSAGES DEBUG ===');
+    console.log('Mapping nodes:', mapping.nodes);
+    console.log('Mapping connections:', mapping.connections);
+    
     // 创建新的段落数据
     const newPassages: Record<string, Passage> = {};
     
     // 为每个节点创建段落
     for (const [nodeId, nodeLabel] of Object.entries(mapping.nodes)) {
-      // 提取节点名称（去掉前缀）
-      const nodeName = nodeLabel.replace(/节点\d+：/, '');
+      console.log('Processing node:', nodeId, 'Label:', nodeLabel);
+      
+      // 提取节点名称（去掉前缀）- 处理节点编号前缀
+      let nodeName = nodeLabel;
+      
+      // 移除节点前缀（节点数字：）
+      const prefixMatch = nodeLabel.match(/^节点\d+：(.+)$/);
+      if (prefixMatch) {
+        nodeName = prefixMatch[1];
+      }
+      
+      // 清理任何残留的引号或空白字符
+      nodeName = nodeName.replace(/^["']|["']$/g, '').trim();
+      
+      console.log('Processed node name:', nodeName);
       
       // 创建段落ID（使用节点ID）
       const passageId = nodeId;
@@ -329,7 +394,6 @@ const GameApp: React.FC = () => {
       for (const conn of outgoingConnections) {
         const targetNodeLabel = mapping.nodes[conn.to];
         if (targetNodeLabel) {
-          const targetNodeName = targetNodeLabel.replace(/节点\d+：/, '');
           choices.push({
             text: conn.condition,
             action: conn.to // 使用目标节点ID作为action
@@ -352,18 +416,22 @@ const GameApp: React.FC = () => {
         };
       } else {
         // 为普通节点创建段落
+        console.log('Creating normal passage for node:', nodeId, 'with text:', nodeName);
         newPassages[passageId] = {
-          text: `场景：${nodeName}`,
+          text: `${nodeName}`,
           choices: choices
         };
+        console.log('Created passage:', passageId, 'Text:', newPassages[passageId].text);
       }
     }
     
     // 更新段落数据状态
+    console.log('Setting new passages:', newPassages);
     setPassages(newPassages);
     // 将当前段落ID设置为第一个节点
     const firstNodeId = Object.keys(mapping.nodes)[0];
     if (firstNodeId) {
+      console.log('Setting current passage ID to:', firstNodeId);
       setCurrentPassageId(firstNodeId);
     }
   };
@@ -373,7 +441,7 @@ const GameApp: React.FC = () => {
       {/* 顶部标题栏 */}
       <div className="title-bar">
         <div className="title-controls">
-          <button className="title-button">设置</button>
+          <button className="title-button" onClick={openSettings}>设置</button>
           <button className="title-button">语言</button>
           <button className="title-button">退出</button>
         </div>
@@ -405,19 +473,23 @@ const GameApp: React.FC = () => {
             <GameHeader 
               gameState={gameState} 
               onChangeProfession={changeProfession} 
+              onOpenSettings={openSettings}
             />
             
             {/* 故事段落组件 */}
             <PassageComponent 
               passage={currentPassage} 
               onChoiceSelect={goToPassage} 
+              onTextComplete={() => setIsPassageTextComplete(true)}
+              textSpeed={textSpeed}
             />
             
             {/* 选择组件 */}
             <Choices 
               choices={currentPassage.choices} 
               onChoiceSelect={goToPassage} 
-          />
+              isPassageTextComplete={isPassageTextComplete}
+            />
           </div>
         </div>
         
@@ -432,6 +504,14 @@ const GameApp: React.FC = () => {
           <TestWindow onTestSubmit={handleTestSubmit} />
         </div>
       </div>
+      
+      {/* 设置模态框 */}
+      <SettingsModal 
+        isOpen={showSettings}
+        onClose={closeSettings}
+        currentSpeed={textSpeed}
+        onSpeedChange={changeTextSpeed}
+      />
     </div>
   );
 };
