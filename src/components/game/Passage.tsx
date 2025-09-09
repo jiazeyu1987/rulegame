@@ -147,7 +147,7 @@ const PassageComponent: React.FC<PassageComponentProps> = ({ passage, onTextComp
     <div id="passage">
       <div className="passage-text">
         <p>
-          {displayText || (passage?.text && displayText === '' ? '加载中...' : '等待场景加载...')}
+          {displayText}
         </p>
       </div>
     </div>
