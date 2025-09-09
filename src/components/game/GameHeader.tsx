@@ -5,9 +5,10 @@ interface GameHeaderProps {
   gameState: GameState;
   onChangeProfession: () => void;
   onOpenSettings: () => void;
+  onDebugKill?: () => void; // 调试用：立即死亡
 }
 
-const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings }) => {
+const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings, onDebugKill }) => {
   // 格式化时间显示
   const formatTime = (time: number): string => {
     const hours = Math.floor(time);
@@ -36,6 +37,17 @@ const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, 
         >
           ⚙️
         </button>
+        {process.env.NODE_ENV === 'development' && onDebugKill && (
+          <button 
+            className="debug-kill-button" 
+            id="debug-kill-button"
+            onClick={onDebugKill}
+            title="调试用：立即死亡"
+            style={{ backgroundColor: '#ff0000', color: 'white', marginLeft: '5px' }}
+          >
+            💀
+          </button>
+        )}
       </div>
       <div className="stats-container">
         <div className="stat-item">

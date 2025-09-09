@@ -8,6 +8,7 @@ import PassageComponent from './components/game/Passage';
 import Choices from './components/game/Choices';
 import TestWindow from './components/game/TestWindow';
 import SettingsModal from './components/settings/SettingsModal';
+import DeathScreen from './components/game/DeathScreen';
 
 // 初始游戏状态
 const initialGameState: GameState = {
@@ -157,6 +158,9 @@ const GameApp: React.FC = () => {
   // 设置面板是否显示
   const [showSettings, setShowSettings] = useState<boolean>(false);
   
+  // 死亡状态
+  const [isDead, setIsDead] = useState<boolean>(false);
+  
   // 组件挂载时加载保存的故事和设置
   useEffect(() => {
     // 加载保存的文字速度
@@ -178,6 +182,45 @@ const GameApp: React.FC = () => {
     }
   }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
   
+  // 死亡检测逻辑
+  useEffect(() => {
+    console.log('=== DEATH EFFECT RUNNING ===');
+    console.log('Current game state:', gameState);
+    console.log('Is already dead:', isDead);
+    
+    // 检查是否满足死亡条件
+    const checkDeathConditions = () => {
+      // 死亡条件1：理智值降为0
+      if (gameState.sanity <= 0) {
+        console.log('DEATH: Sanity <= 0');
+        return true;
+      }
+      
+      // 死亡条件2：体力值降为0
+      if (gameState.energy <= 0) {
+        console.log('DEATH: Energy <= 0');
+        return true;
+      }
+      
+      // 死亡条件3：饥饿值降为0
+      if (gameState.hunger <= 0) {
+        console.log('DEATH: Hunger <= 0');
+        return true;
+      }
+      
+      console.log('DEATH: All conditions checked, player alive');
+      return false;
+    };
+    
+    const shouldDie = checkDeathConditions();
+    console.log('Should die:', shouldDie, 'Is already dead:', isDead);
+    
+    if (shouldDie && !isDead) {
+      console.log('TRIGGERING DEATH!');
+      setIsDead(true);
+    }
+  }, [gameState, isDead]);
+  
   // 改变职业
   const changeProfession = () => {
     const currentIndex = professions.indexOf(gameState.profession);
@@ -196,6 +239,48 @@ const GameApp: React.FC = () => {
   // 关闭设置面板
   const closeSettings = () => {
     setShowSettings(false);
+  };
+  
+  // 调试：立即死亡（用于测试死亡屏幕）
+  const debugKillPlayer = () => {
+    console.log('DEBUG: Manually triggering death');
+    setGameState(prev => {
+      console.log('DEBUG: Setting sanity to 0, current state:', prev);
+      return {
+        ...prev,
+        sanity: 0 // 将理智值设为0触发死亡
+      };
+    });
+  };
+  
+  // 重新开始游戏
+  const restartGame = () => {
+    // 重置游戏状态到初始值
+    setGameState(initialGameState);
+    
+    // 重置规则纸张状态
+    setPapers(rulePapers);
+    
+    // 重置当前规则纸张索引
+    setCurrentPaperIndex(0);
+    
+    // 重置场景文字完成状态
+    setIsPassageTextComplete(false);
+    
+    // 清除死亡状态
+    setIsDead(false);
+    
+    // 获取上次保存的故事内容
+    const lastStoryContent = localStorage.getItem('lastStoryContent');
+    
+    if (lastStoryContent && lastStoryContent.trim()) {
+      // 如果有保存的故事内容，使用现有的handleTestSubmit函数来解析和加载
+      handleTestSubmit(lastStoryContent);
+    } else {
+      // 如果没有保存的故事内容，重置到默认状态
+      setPassages(defaultPassages);
+      setCurrentPassageId('start');
+    }
   };
   
   // 改变文字速度
@@ -476,6 +561,7 @@ const GameApp: React.FC = () => {
               gameState={gameState} 
               onChangeProfession={changeProfession} 
               onOpenSettings={openSettings}
+              onDebugKill={debugKillPlayer}
             />
             
             {/* 故事段落组件 */}
@@ -515,6 +601,29 @@ const GameApp: React.FC = () => {
         currentSpeed={textSpeed}
         onSpeedChange={changeTextSpeed}
       />
+      
+      {/* 死亡屏幕 */}
+      {isDead && (
+        <DeathScreen onRestart={restartGame} />
+      )}
+      
+      {/* 调试用：显示当前死亡状态 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="debug-panel">
+          Dead: {isDead ? 'YES' : 'NO'} | Sanity: {gameState.sanity} | Energy: {gameState.energy} | Hunger: {gameState.hunger}
+          <br />
+          <button onClick={debugKillPlayer} style={{ background: 'red', color: 'white', border: 'none', padding: '5px', marginTop: '5px' }}>
+            KILL PLAYER
+          </button>
+        </div>
+      )}
+      
+      {/* 调试用：显示当前死亡状态 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{ position: 'fixed', bottom: '10px', right: '10px', background: 'black', color: 'white', padding: '10px', zIndex: 10000 }}>
+          Dead: {isDead ? 'YES' : 'NO'} | Sanity: {gameState.sanity} | Energy: {gameState.energy} | Hunger: {gameState.hunger}
+        </div>
+      )}
     </div>
   );
 };

@@ -13,6 +13,8 @@ const TestWindow: React.FC<TestWindowProps> = ({ onTestSubmit }) => {
       // 解析mermaid内容并映射到游戏场景
       const sceneMapping = parseMermaidToScene(inputValue);
       console.log('场景映射结果:', sceneMapping);
+      // 自动保存故事内容到localStorage
+      localStorage.setItem('lastStoryContent', inputValue);
       onTestSubmit(inputValue);
     }
   };

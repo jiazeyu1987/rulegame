@@ -41,6 +41,109 @@
   color: #888;
 }
 
+/* 死亡屏幕样式 */
+.death-screen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.death-content {
+  text-align: center;
+  color: #ff0000;
+}
+
+.death-character {
+  font-size: 20rem;
+  font-weight: bold;
+  color: #ff0000;
+  text-shadow: 0 0 50px #ff0000, 0 0 100px #ff0000;
+  margin-bottom: 2rem;
+  animation: death-pulse 2s ease-in-out infinite;
+}
+
+.death-message {
+  font-size: 3rem;
+  color: #ffffff;
+  margin-bottom: 3rem;
+  text-shadow: 0 0 20px #ffffff;
+}
+
+.restart-button {
+  font-size: 1.5rem;
+  padding: 1rem 3rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+}
+
+.restart-button:hover {
+  background-color: #ef4444;
+  transform: scale(1.05);
+  box-shadow: 0 0 30px #ef4444;
+}
+
+.restart-button:active {
+  transform: scale(0.95);
+}
+
+@keyframes death-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* 调试面板样式 */
+.debug-panel {
+  position: fixed !important;
+  bottom: 10px !important;
+  right: 10px !important;
+  background: black !important;
+  color: white !important;
+  padding: 10px !important;
+  z-index: 10000 !important;
+  border: 1px solid white !important;
+  border-radius: 5px !important;
+  font-size: 12px !important;
+  font-family: monospace !important;
+}
+
+/* 调试死亡按钮样式 */
+.debug-kill-button {
+  background-color: #ff0000 !important;
+  color: white !important;
+  border: none !important;
+  padding: 5px 8px !important;
+  margin-left: 5px !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+}
+
+.debug-kill-button:hover {
+  background-color: #cc0000 !important;
+}
+
 /* 设置模态框样式 */
 .settings-modal-overlay {
   position: fixed;
