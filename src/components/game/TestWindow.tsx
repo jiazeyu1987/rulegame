@@ -14,7 +14,27 @@ const TestWindow: React.FC<TestWindowProps> = ({ onTestSubmit }) => {
       const sceneMapping = parseMermaidToScene(inputValue);
       console.log('场景映射结果:', sceneMapping);
       onTestSubmit(inputValue);
-      setInputValue(''); // 清空输入框
+    }
+  };
+
+  const handleSave = () => {
+    if (inputValue.trim()) {
+      // 保存当前内容到localStorage
+      localStorage.setItem('lastStoryContent', inputValue);
+      alert('故事已保存');
+    }
+  };
+
+  const handleLoad = () => {
+    // 从localStorage加载保存的内容
+    const savedContent = localStorage.getItem('lastStoryContent');
+    if (savedContent) {
+      setInputValue(savedContent);
+      // 自动解析加载的内容
+      onTestSubmit(savedContent);
+      alert('已加载保存的故事');
+    } else {
+      alert('没有找到保存的故事');
     }
   };
 
@@ -104,6 +124,12 @@ const TestWindow: React.FC<TestWindowProps> = ({ onTestSubmit }) => {
         </button>
         <button onClick={handleSubmit} className="test-button">
           解析并映射场景
+        </button>
+        <button onClick={handleSave} className="test-button">
+          保存故事
+        </button>
+        <button onClick={handleLoad} className="test-button">
+          加载故事
         </button>
       </div>
     </div>
