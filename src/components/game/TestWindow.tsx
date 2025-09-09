@@ -54,10 +54,12 @@ const TestWindow: React.FC<TestWindowProps> = ({ onTestSubmit }) => {
       // 匹配连接关系: N1 -->|"看纸条"| N2
       const connectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*\|(.+?)\|\s*([A-Z0-9_]+)/);
       if (connectionMatch) {
+        // 去除条件中的双引号
+        const condition = connectionMatch[2].replace(/^"(.+(?="$))"$/, '$1');
         connections.push({
           from: connectionMatch[1],
           to: connectionMatch[3],
-          condition: connectionMatch[2]
+          condition: condition
         });
       }
       

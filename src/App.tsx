@@ -418,12 +418,14 @@ const GameApp: React.FC = () => {
       }
       
       // 匹配连接关系: N1 -->|"看纸条"| N2
-      const connectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*\|(.+?)\|\s*([A-Z0-9_]+)/);
+      const connectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*\|\"(.+?)\"\|\s*([A-Z0-9_]+)/);
       if (connectionMatch) {
+        // 去除条件中的双引号
+        const condition = connectionMatch[2].replace(/^"(.+(?="$))"$/, '$1');
         connections.push({
           from: connectionMatch[1],
           to: connectionMatch[3],
-          condition: connectionMatch[2]
+          condition: condition
         });
       }
       
@@ -508,54 +510,68 @@ const GameApp: React.FC = () => {
   };
   
   return (
-    <div className="main-container">
-      {/* 规则面板组件 */}
-      <div className="rules-container">
-        {/* 规则纸张组件 */}
-        <RulePaperComponent 
-          paper={currentPaper} 
-          onToggleRuleMark={toggleRuleMark} 
-        />
-        
-        {/* 规则导航组件 */}
-        <RuleNavigation 
-          onPrev={prevRule} 
-          onNext={nextRule} 
-        />
+    <div className="app-container">
+      {/* 顶部标题栏 */}
+      <div className="title-bar">
+        <div className="title-controls">
+          <button className="title-button">设置</button>
+          <button className="title-button">语言</button>
+          <button className="title-button">退出</button>
+        </div>
+        <h1 className="game-title">寝室规则怪谈</h1>
+        <div className="title-controls-placeholder"></div>
       </div>
       
-      {/* 游戏区域组件 */}
-      <div className="game-area">
-        <div id="game-container">
-          {/* 游戏头部组件 */}
-          <GameHeader 
-            gameState={gameState} 
-            onChangeProfession={changeProfession} 
+      {/* 主内容区域 */}
+      <div className="main-content">
+        {/* 规则面板组件 */}
+        <div className="rules-container">
+          {/* 规则纸张组件 */}
+          <RulePaperComponent 
+            paper={currentPaper} 
+            onToggleRuleMark={toggleRuleMark} 
           />
           
-          {/* 故事段落组件 */}
-          <PassageComponent 
-            passage={currentPassage} 
-            onChoiceSelect={goToPassage} 
+          {/* 规则导航组件 */}
+          <RuleNavigation 
+            onPrev={prevRule} 
+            onNext={nextRule} 
           />
-          
-          {/* 选择组件 */}
-          <Choices 
-            choices={currentPassage.choices} 
-            onChoiceSelect={goToPassage} 
-          />
-        </div>
-      </div>
-      
-      {/* 右侧容器 */}
-      <div className="right-container">
-        {/* 通关规则面板组件 */}
-        <div className="clear-rules-container">
-          <ClearRules clearRules={clearRules} />
         </div>
         
-        {/* 测试窗口组件 */}
-        <TestWindow onTestSubmit={handleTestSubmit} />
+        {/* 游戏区域组件 */}
+        <div className="game-area">
+          <div id="game-container">
+            {/* 游戏头部组件 */}
+            <GameHeader 
+              gameState={gameState} 
+              onChangeProfession={changeProfession} 
+            />
+            
+            {/* 故事段落组件 */}
+            <PassageComponent 
+              passage={currentPassage} 
+              onChoiceSelect={goToPassage} 
+            />
+            
+            {/* 选择组件 */}
+            <Choices 
+              choices={currentPassage.choices} 
+              onChoiceSelect={goToPassage} 
+          />
+          </div>
+        </div>
+        
+        {/* 右侧容器 */}
+        <div className="right-container">
+          {/* 通关规则面板组件 */}
+          <div className="clear-rules-container">
+            <ClearRules clearRules={clearRules} />
+          </div>
+          
+          {/* 测试窗口组件 */}
+          <TestWindow onTestSubmit={handleTestSubmit} />
+        </div>
       </div>
     </div>
   );
