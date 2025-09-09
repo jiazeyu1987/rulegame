@@ -21,7 +21,6 @@ const TestWindow: React.FC<TestWindowProps> = ({ onTestSubmit }) => {
     if (inputValue.trim()) {
       // 保存当前内容到localStorage
       localStorage.setItem('lastStoryContent', inputValue);
-      alert('故事已保存');
     }
   };
 
@@ -32,9 +31,6 @@ const TestWindow: React.FC<TestWindowProps> = ({ onTestSubmit }) => {
       setInputValue(savedContent);
       // 自动解析加载的内容
       onTestSubmit(savedContent);
-      alert('已加载保存的故事');
-    } else {
-      alert('没有找到保存的故事');
     }
   };
 

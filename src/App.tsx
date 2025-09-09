@@ -257,8 +257,6 @@ const GameApp: React.FC = () => {
     
     // 根据解析结果更新游戏段落数据
     updatePassagesFromMapping(sceneMapping);
-    
-    alert(`已根据第1天的内容更新游戏剧情`);
   };
   
   // 解析mermaid内容并映射到游戏场景
