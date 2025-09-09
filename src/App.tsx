@@ -241,17 +241,17 @@ const GameApp: React.FC = () => {
     setShowSettings(false);
   };
   
-  // 调试：立即死亡（用于测试死亡屏幕）
-  const debugKillPlayer = () => {
-    console.log('DEBUG: Manually triggering death');
-    setGameState(prev => {
-      console.log('DEBUG: Setting sanity to 0, current state:', prev);
-      return {
-        ...prev,
-        sanity: 0 // 将理智值设为0触发死亡
-      };
-    });
-  };
+  // 移除调试用的立即死亡功能，死亡应该通过故事节点触发
+  // const debugKillPlayer = () => {
+  //   console.log('DEBUG: Manually triggering death');
+  //   setGameState(prev => {
+  //     console.log('DEBUG: Setting sanity to 0, current state:', prev);
+  //     return {
+  //       ...prev,
+  //       sanity: 0 // 将理智值设为0触发死亡
+  //     };
+  //   });
+  // };
   
   // 重新开始游戏
   const restartGame = () => {
@@ -377,6 +377,13 @@ const GameApp: React.FC = () => {
         luck: Math.max(0, Math.min(100, prev.luck + (choice.luckChange || 0)))
       };
     });
+    
+    // 检查目标段落是否是死亡节点
+    const targetPassage = passages[choice.action];
+    if (targetPassage && targetPassage.text.includes('你死了：')) {
+      console.log('DEATH: Reached death node:', choice.action);
+      setIsDead(true);
+    }
     
     // 更新当前段落
     setCurrentPassageId(choice.action);
@@ -561,7 +568,8 @@ const GameApp: React.FC = () => {
               gameState={gameState} 
               onChangeProfession={changeProfession} 
               onOpenSettings={openSettings}
-              onDebugKill={debugKillPlayer}
+              // 移除调试用的立即死亡功能
+              // onDebugKill={debugKillPlayer}
             />
             
             {/* 故事段落组件 */}
@@ -611,10 +619,11 @@ const GameApp: React.FC = () => {
       {process.env.NODE_ENV === 'development' && (
         <div className="debug-panel">
           Dead: {isDead ? 'YES' : 'NO'} | Sanity: {gameState.sanity} | Energy: {gameState.energy} | Hunger: {gameState.hunger}
-          <br />
-          <button onClick={debugKillPlayer} style={{ background: 'red', color: 'white', border: 'none', padding: '5px', marginTop: '5px' }}>
-            KILL PLAYER
-          </button>
+          {/* 移除KILL PLAYER按钮，死亡应该通过故事节点触发 */}
+          {/* <br /> */}
+          {/* <button onClick={debugKillPlayer} style={{ background: 'red', color: 'white', border: 'none', padding: '5px', marginTop: '5px' }}> */}
+          {/*   KILL PLAYER */}
+          {/* </button> */}
         </div>
       )}
       
