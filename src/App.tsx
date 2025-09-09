@@ -488,6 +488,7 @@ const GameApp: React.FC = () => {
             
             {/* 选择组件 */}
             <Choices 
+              key={currentPassageId}  // 使用当前段落ID作为key，强制组件重新挂载
               choices={currentPassage.choices} 
               onChoiceSelect={goToPassage} 
               isPassageTextComplete={isPassageTextComplete}

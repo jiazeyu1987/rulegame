@@ -19,6 +19,9 @@ const Choices: React.FC<ChoicesProps> = ({ choices, onChoiceSelect, isPassageTex
       }, 500); // 0.5秒后开始显示选择项
       
       return () => clearTimeout(timer);
+    } else {
+      // 当场景文字未完成时，立即隐藏选择项
+      setIsChoicesVisible(false);
     }
   }, [isPassageTextComplete]);
 
