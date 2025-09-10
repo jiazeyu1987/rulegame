@@ -4,12 +4,12 @@ import type { GameState } from '../../types/game';
 interface GameHeaderProps {
   gameState: GameState;
   onChangeProfession: () => void;
-  onOpenSettings: () => void;
+  // onOpenSettings: () => void; // 设置按钮已被移除
   // onDebugKill?: () => void; // 调试用：立即死亡（已移除）
   // onTestDeath?: () => void; // 测试死亡界面（已移除）
 }
 
-const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings, onTestDeath }) => {
+const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession }) => {
   // 格式化时间显示
   const formatTime = (time: number): string => {
     const hours = Math.floor(time);

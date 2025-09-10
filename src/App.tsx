@@ -253,13 +253,13 @@ const GameApp: React.FC = () => {
   //   });
   // };
 
-  // 测试死亡界面 - 直接触发死亡状态
-  const testDeathScreen = () => {
-    console.log('TEST: Triggering death screen for testing');
-    console.log('Current isDead state:', isDead);
-    setIsDead(true);
-    console.log('After setting isDead to true');
-  };
+  // 测试死亡界面 - 直接触发死亡状态（已移除，因为按钮已被删除）
+  // const testDeathScreen = () => {
+  //   console.log('TEST: Triggering death screen for testing');
+  //   console.log('Current isDead state:', isDead);
+  //   setIsDead(true);
+  //   console.log('After setting isDead to true');
+  // };
   
   // 重新开始游戏
   const restartGame = () => {
@@ -575,7 +575,7 @@ const GameApp: React.FC = () => {
             <GameHeader 
               gameState={gameState} 
               onChangeProfession={changeProfession} 
-              onOpenSettings={openSettings}
+              // onOpenSettings={openSettings} // 设置按钮已被移除
               // 移除调试用的立即死亡功能
               // onDebugKill={debugKillPlayer}
               // 移除测试死亡界面功能
