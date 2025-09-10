@@ -398,15 +398,28 @@ const GameApp: React.FC = () => {
     setCurrentPassageId(choice.action);
   };
   
-  // 处理测试窗口提交
-  const handleTestSubmit = (input: string) => {
+  // 处理测试窗口提交 - 支持Mermaid和Python格式
+  const handleTestSubmit = (input: string, type: 'mermaid' | 'python' = 'mermaid') => {
+    console.log('测试输入类型:', type);
     console.log('测试输入:', input);
-    // 解析mermaid内容并映射到游戏场景
-    const sceneMapping = parseMermaidToScene(input);
-    console.log('场景映射结果:', sceneMapping);
     
-    // 根据解析结果更新游戏段落数据
-    updatePassagesFromMapping(sceneMapping);
+    if (type === 'mermaid') {
+      // 解析mermaid内容并映射到游戏场景
+      const sceneMapping = parseMermaidToScene(input);
+      console.log('Mermaid场景映射结果:', sceneMapping);
+      // 根据解析结果更新游戏段落数据
+      updatePassagesFromMapping(sceneMapping);
+    } else if (type === 'python') {
+      // 解析Python故事脚本
+      const sceneMapping = parsePythonStory(input);
+      console.log('Python场景映射结果:', sceneMapping);
+      if (sceneMapping) {
+        // 根据解析结果更新游戏段落数据
+        updatePassagesFromMapping(sceneMapping);
+      } else {
+        alert('Python故事脚本解析失败，请检查格式是否正确');
+      }
+    }
   };
   
   // 解析mermaid内容并映射到游戏场景
@@ -455,6 +468,171 @@ const GameApp: React.FC = () => {
       connections
     };
   };
+
+  // 解析Python故事脚本内容 - 完整修复版，正确处理实际文件结构
+  const parsePythonStory = (pythonContent: string) => {
+    try {
+      console.log('开始解析Python故事脚本...');
+      
+      // 找到主flowchart_data结构
+      const mainFlowchartStart = pythonContent.indexOf('flowchart_data = {');
+      if (mainFlowchartStart === -1) {
+        console.log('未能找到主flowchart_data');
+        return null;
+      }
+      
+      // 提取完整的主flowchart_data结构
+      let braceCount = 0;
+      let inString = false;
+      let escapeNext = false;
+      let mainFlowchartEnd = -1;
+      
+      for (let i = mainFlowchartStart + 'flowchart_data = {'.length; i < pythonContent.length; i++) {
+        const char = pythonContent[i];
+        
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escapeNext = true;
+          continue;
+        }
+        
+        if (char === '"' && !inString) {
+          inString = true;
+        } else if (char === '"' && inString) {
+          inString = false;
+        }
+        
+        if (!inString) {
+          if (char === '{') {
+            braceCount++;
+          } else if (char === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              mainFlowchartEnd = i;
+              break;
+            }
+          }
+        }
+      }
+      
+      if (mainFlowchartEnd === -1) {
+        console.log('未能找到主flowchart_data的结束位置');
+        return null;
+      }
+      
+      const mainDataBlock = pythonContent.substring(mainFlowchartStart + 'flowchart_data = '.length, mainFlowchartEnd + 1);
+      
+      // 从主数据块中提取标题和开始节点
+      const titleMatch = mainDataBlock.match(/"title":\s*"([^"]+)"/);
+      const title = titleMatch ? titleMatch[1] : '未命名故事';
+      
+      const startNodeMatch = mainDataBlock.match(/"start_node":\s*"(\w+)"/);
+      const startNode = startNodeMatch ? startNodeMatch[1] : 'N1';
+      
+      // 从主数据块中提取节点
+      const nodes = {};
+      const nodesSection = extractSection(mainDataBlock, 'nodes');
+      if (nodesSection) {
+        const nodePattern = /"(\w+)":\s*\{[^}]*"content":\s*"([^"]*)"[^}]*\}/g;
+        let nodeMatch;
+        let nodeCount = 0;
+        while ((nodeMatch = nodePattern.exec(nodesSection)) !== null) {
+          const nodeId = nodeMatch[1];
+          const content = nodeMatch[2];
+          nodes[nodeId] = content;
+          nodeCount++;
+          if (nodeCount <= 3) {
+            console.log(`解析节点: ${nodeId} = ${content.substring(0, 50)}...`);
+          }
+        }
+        console.log(`总共解析了 ${nodeCount} 个节点`);
+      }
+      
+      // 从主flowchart_data之后的内容中提取边
+      const afterMainFlowchart = pythonContent.substring(mainFlowchartEnd + 1);
+      const connections = [];
+      
+      // 在剩余内容中查找边对象
+      const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"\s*\}/g;
+      let edgeMatch;
+      let edgeCount = 0;
+      while ((edgeMatch = edgeObjectPattern.exec(afterMainFlowchart)) !== null) {
+        connections.push({
+          from: edgeMatch[1],
+          to: edgeMatch[2],
+          condition: edgeMatch[3]
+        });
+        edgeCount++;
+        if (edgeCount <= 5) {
+          console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]})`);
+        }
+      }
+      console.log(`总共解析了 ${edgeCount} 条边`);
+      
+      console.log(`解析完成: ${Object.keys(nodes).length} 个节点, ${connections.length} 条边`);
+      return { nodes, connections, title, start_node: startNode };
+      
+    } catch (error) {
+      console.error('Python故事解析错误:', error);
+      return null;
+    }
+  }
+  
+  // 辅助函数：使用大括号匹配提取章节
+  function extractSection(data, sectionName) {
+    const sectionStart = data.indexOf(`"${sectionName}": {`);
+    if (sectionStart === -1) return null;
+    
+    let braceCount = 0;
+    let inString = false;
+    let escapeNext = false;
+    let sectionEnd = -1;
+    let startBraceFound = false;
+    
+    for (let i = sectionStart; i < data.length; i++) {
+      const char = data[i];
+      
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+      
+      if (char === '"' && !inString) {
+        inString = true;
+      } else if (char === '"' && inString) {
+        inString = false;
+      }
+      
+      if (!inString) {
+        if (char === '{') {
+          braceCount++;
+          startBraceFound = true;
+        } else if (char === '}' && startBraceFound) {
+          braceCount--;
+          if (braceCount === 0) {
+            sectionEnd = i;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (sectionEnd !== -1) {
+      const contentStart = data.indexOf('{', sectionStart) + 1;
+      return data.substring(contentStart, sectionEnd);
+    }
+    
+    return null;
+  }
   
   // 根据解析结果更新游戏段落数据
   const updatePassagesFromMapping = (mapping: {nodes: Record<string, string>, connections: Array<{from: string, to: string, condition: string}>}) => {

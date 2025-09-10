@@ -5,7 +5,7 @@ interface SettingsModalProps {
   onClose: () => void;
   currentSpeed: number;
   onSpeedChange: (speed: number) => void;
-  onTestSubmit: (input: string) => void;
+  onTestSubmit: (input: string, type: 'mermaid' | 'python') => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
@@ -17,8 +17,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   // 所有Hook必须在组件顶层，在任何条件语句之前
   const [isVisible, setIsVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<'speed' | 'test'>('speed');
+  const [activeTab, setActiveTab] = useState<'speed' | 'test1' | 'test2'>('speed');
   const [testInput, setTestInput] = useState('');
+  const [test1Input, setTest1Input] = useState('');
+  const [test2Input, setTest2Input] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -104,8 +106,34 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     </div>
   );
 
-  // 渲染测试内容 - 包含完整的测试窗口功能
-  const renderTestContent = () => {
+  // 处理保存功能 - 共享函数
+  const handleSave = () => {
+    if (activeTab === 'test1' && test1Input.trim()) {
+      localStorage.setItem('lastMermaidContent', test1Input);
+    } else if (activeTab === 'test2' && test2Input.trim()) {
+      localStorage.setItem('lastPythonContent', test2Input);
+    }
+  };
+
+  // 处理加载功能 - 共享函数
+  const handleLoad = () => {
+    if (activeTab === 'test1') {
+      const savedContent = localStorage.getItem('lastMermaidContent');
+      if (savedContent) {
+        setTest1Input(savedContent);
+        onTestSubmit(savedContent, 'mermaid');
+      }
+    } else if (activeTab === 'test2') {
+      const savedContent = localStorage.getItem('lastPythonContent');
+      if (savedContent) {
+        setTest2Input(savedContent);
+        onTestSubmit(savedContent, 'python');
+      }
+    }
+  };
+
+  // 渲染测试1内容 - Mermaid解析
+  const renderTest1Content = () => {
 
     // 解析mermaid内容并映射到游戏场景
     const parseMermaidToScene = (mermaidContent: string) => {
@@ -144,14 +172,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       return { nodes, connections };
     };
 
-    const handleTestSubmit = () => {
-      if (testInput.trim()) {
-        const sceneMapping = parseMermaidToScene(testInput);
-        console.log('测试解析结果:', sceneMapping);
+    const handleTest1Submit = () => {
+      if (test1Input.trim()) {
+        const sceneMapping = parseMermaidToScene(test1Input);
+        console.log('Mermaid测试解析结果:', sceneMapping);
         // 保存到localStorage
-        localStorage.setItem('lastStoryContent', testInput);
+        localStorage.setItem('lastMermaidContent', test1Input);
         // 调用父组件的onTestSubmit
-        onTestSubmit(testInput);
+        onTestSubmit(test1Input, 'mermaid');
       }
     };
 
@@ -165,23 +193,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         const reader = new FileReader();
         reader.onload = (e) => {
           const content = e.target?.result as string;
-          setTestInput(content);
+          setTest1Input(content);
         };
         reader.readAsText(file);
-      }
-    };
-
-    const handleSave = () => {
-      if (testInput.trim()) {
-        localStorage.setItem('lastStoryContent', testInput);
-      }
-    };
-
-    const handleLoad = () => {
-      const savedContent = localStorage.getItem('lastStoryContent');
-      if (savedContent) {
-        setTestInput(savedContent);
-        onTestSubmit(savedContent);
       }
     };
 
@@ -197,8 +211,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* 文本输入区域 */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
           <textarea
-            value={testInput}
-            onChange={(e) => setTestInput(e.target.value)}
+            value={test1Input}
+            onChange={(e) => setTest1Input(e.target.value)}
             placeholder="请输入mermaid内容，例如：\nflowchart TD\nN1[卧室醒来] -->|看纸条| N2[阅读规则]"
             style={{
               flex: 1,
@@ -216,7 +230,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <input
             type="file"
             ref={fileInputRef}
-            onChange={handleFileChange}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const content = e.target?.result as string;
+                  setTest1Input(content);
+                };
+                reader.readAsText(file);
+              }
+            }}
             accept=".md,.txt,.mermaid"
             style={{ display: 'none' }}
           />
@@ -252,7 +276,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           
           <button
-            onClick={handleTestSubmit}
+            onClick={handleTest1Submit}
             style={{
               flex: 1,
               minWidth: '140px',
@@ -330,6 +354,389 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             }}
           >
             加载故事
+          </button>
+        </div>
+      </div>
+  );
+};
+
+  // 渲染测试2内容 - Python故事脚本解析
+  const renderTest2Content = () => {
+
+    // Wrapper functions to ensure proper scoping
+    const handleTest2Save = () => {
+      handleSave();
+    };
+
+    const handleTest2Load = () => {
+      handleLoad();
+    };
+
+    // 解析Python故事脚本内容 - 完整修复版，正确处理实际文件结构
+    const parsePythonStory = (pythonContent: string) => {
+      try {
+        console.log('开始解析Python故事脚本...');
+        
+        // 找到主flowchart_data结构
+        const mainFlowchartStart = pythonContent.indexOf('flowchart_data = {');
+        if (mainFlowchartStart === -1) {
+          console.log('未能找到主flowchart_data');
+          return null;
+        }
+        
+        // 提取完整的主flowchart_data结构
+        let braceCount = 0;
+        let inString = false;
+        let escapeNext = false;
+        let mainFlowchartEnd = -1;
+        
+        for (let i = mainFlowchartStart + 'flowchart_data = {'.length; i < pythonContent.length; i++) {
+          const char = pythonContent[i];
+          
+          if (escapeNext) {
+            escapeNext = false;
+            continue;
+          }
+          
+          if (char === '\\') {
+            escapeNext = true;
+            continue;
+          }
+          
+          if (char === '"' && !inString) {
+            inString = true;
+          } else if (char === '"' && inString) {
+            inString = false;
+          }
+          
+          if (!inString) {
+            if (char === '{') {
+              braceCount++;
+            } else if (char === '}') {
+              braceCount--;
+              if (braceCount === 0) {
+                mainFlowchartEnd = i;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (mainFlowchartEnd === -1) {
+          console.log('未能找到主flowchart_data的结束位置');
+          return null;
+        }
+        
+        const mainDataBlock = pythonContent.substring(mainFlowchartStart + 'flowchart_data = '.length, mainFlowchartEnd + 1);
+        
+        // 从主数据块中提取标题和开始节点
+        const titleMatch = mainDataBlock.match(/"title":\s*"([^"]+)"/);
+        const title = titleMatch ? titleMatch[1] : '未命名故事';
+        
+        const startNodeMatch = mainDataBlock.match(/"start_node":\s*"(\w+)"/);
+        const startNode = startNodeMatch ? startNodeMatch[1] : 'N1';
+        
+        // 从主数据块中提取节点
+        const nodes = {};
+        const nodesSection = extractSection(mainDataBlock, 'nodes');
+        if (nodesSection) {
+          const nodePattern = /"(\w+)":\s*\{[^}]*"content":\s*"([^"]*)"[^}]*\}/g;
+          let nodeMatch;
+          let nodeCount = 0;
+          while ((nodeMatch = nodePattern.exec(nodesSection)) !== null) {
+            const nodeId = nodeMatch[1];
+            const content = nodeMatch[2];
+            nodes[nodeId] = content;
+            nodeCount++;
+            if (nodeCount <= 3) {
+              console.log(`解析节点: ${nodeId} = ${content.substring(0, 50)}...`);
+            }
+          }
+          console.log(`总共解析了 ${nodeCount} 个节点`);
+        }
+        
+        // 从主flowchart_data之后的内容中提取边
+        const afterMainFlowchart = pythonContent.substring(mainFlowchartEnd + 1);
+        const connections = [];
+        
+        // 在剩余内容中查找边对象
+        const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"\s*\}/g;
+        let edgeMatch;
+        let edgeCount = 0;
+        while ((edgeMatch = edgeObjectPattern.exec(afterMainFlowchart)) !== null) {
+          connections.push({
+            from: edgeMatch[1],
+            to: edgeMatch[2],
+            condition: edgeMatch[3]
+          });
+          edgeCount++;
+          if (edgeCount <= 5) {
+            console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]})`);
+          }
+        }
+        console.log(`总共解析了 ${edgeCount} 条边`);
+        
+        console.log(`解析完成: ${Object.keys(nodes).length} 个节点, ${connections.length} 条边`);
+        return { nodes, connections, title, start_node: startNode };
+        
+      } catch (error) {
+        console.error('Python故事解析错误:', error);
+        return null;
+      }
+    }
+    
+    // 辅助函数：使用大括号匹配提取章节
+    function extractSection(data, sectionName) {
+      const sectionStart = data.indexOf(`"${sectionName}": {`);
+      if (sectionStart === -1) return null;
+      
+      let braceCount = 0;
+      let inString = false;
+      let escapeNext = false;
+      let sectionEnd = -1;
+      let startBraceFound = false;
+      
+      for (let i = sectionStart; i < data.length; i++) {
+        const char = data[i];
+        
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escapeNext = true;
+          continue;
+        }
+        
+        if (char === '"' && !inString) {
+          inString = true;
+        } else if (char === '"' && inString) {
+          inString = false;
+        }
+        
+        if (!inString) {
+          if (char === '{') {
+            braceCount++;
+            startBraceFound = true;
+          } else if (char === '}' && startBraceFound) {
+            braceCount--;
+            if (braceCount === 0) {
+              sectionEnd = i;
+              break;
+            }
+          }
+        }
+      }
+      
+      if (sectionEnd !== -1) {
+        const contentStart = data.indexOf('{', sectionStart) + 1;
+        return data.substring(contentStart, sectionEnd);
+      }
+      
+      return null;
+    }
+
+    const handleTest2Submit = () => {
+      if (test2Input.trim()) {
+        const storyData = parsePythonStory(test2Input);
+        if (storyData) {
+          console.log('Python故事测试解析结果:', storyData);
+          // 保存到localStorage
+          localStorage.setItem('lastPythonContent', test2Input);
+          // 调用父组件的onTestSubmit
+          onTestSubmit(test2Input, 'python');
+        } else {
+          alert('Python故事脚本解析失败，请检查格式是否正确');
+        }
+      }
+    };
+
+    const handleFileRead = () => {
+      fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setTest2Input(content);
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    return (
+      <div className="test-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <h3 style={{ color: '#ccc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Python故事脚本测试</h3>
+          <p style={{ color: '#999', fontSize: '1rem' }}>
+            在这里输入或加载Python格式的故事脚本，测试故事解析功能
+          </p>
+        </div>
+        
+        {/* 文本输入区域 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+          <textarea
+            value={test2Input}
+            onChange={(e) => setTest2Input(e.target.value)}
+            placeholder={`请输入Python故事脚本，例如：
+flowchart_data = {
+    "title": "第一天故事",
+    "start_node": "N1",
+    "nodes": {
+        "N1": {
+            "content": "卧室里弥漫着铁锈味，你头痛欲裂地醒来...",
+            "is_death": false,
+            "is_end": false
+        }
+    },
+    "edges": [
+        {"from": "N1", "to": "N2", "label": "看纸条"}
+    ]
+}`}
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(40, 40, 40, 0.8)',
+              border: '2px solid #555',
+              borderRadius: '8px',
+              color: '#fff',
+              padding: '1rem',
+              fontSize: '1rem',
+              fontFamily: 'monospace',
+              resize: 'vertical',
+              minHeight: '200px'
+            }}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const content = e.target?.result as string;
+                  setTest2Input(content);
+                };
+                reader.readAsText(file);
+              }
+            }}
+            accept=".py"
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* 操作按钮区域 */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleFileRead}
+            style={{
+              flex: 1,
+              minWidth: '120px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            读取Python文件
+          </button>
+          
+          <button
+            onClick={handleTest2Submit}
+            style={{
+              flex: 1,
+              minWidth: '140px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            解析Python故事
+          </button>
+          
+          <button
+            onClick={handleTest2Save}
+            style={{
+              flex: 1,
+              minWidth: '100px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            保存脚本
+          </button>
+          
+          <button
+            onClick={handleTest2Load}
+            style={{
+              flex: 1,
+              minWidth: '100px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            加载脚本
           </button>
         </div>
       </div>
@@ -447,13 +854,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 语速
               </button>
               <button
-                className={`tab-button ${activeTab === 'test' ? 'active' : ''}`}
-                onClick={() => setActiveTab('test')}
+                className={`tab-button ${activeTab === 'test1' ? 'active' : ''}`}
+                onClick={() => setActiveTab('test1')}
                 style={{
                   padding: '1rem 1.5rem',
-                  backgroundColor: activeTab === 'test' ? 'rgba(100, 100, 200, 0.3)' : 'rgba(50, 50, 50, 0.5)',
-                  color: activeTab === 'test' ? '#fff' : '#aaa',
-                  border: activeTab === 'test' ? '2px solid #666' : '2px solid #444',
+                  backgroundColor: activeTab === 'test1' ? 'rgba(100, 100, 200, 0.3)' : 'rgba(50, 50, 50, 0.5)',
+                  color: activeTab === 'test1' ? '#fff' : '#aaa',
+                  border: activeTab === 'test1' ? '2px solid #666' : '2px solid #444',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
@@ -461,7 +868,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   fontWeight: 'bold'
                 }}
               >
-                测试
+                测试1
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'test2' ? 'active' : ''}`}
+                onClick={() => setActiveTab('test2')}
+                style={{
+                  padding: '1rem 1.5rem',
+                  backgroundColor: activeTab === 'test2' ? 'rgba(100, 100, 200, 0.3)' : 'rgba(50, 50, 50, 0.5)',
+                  color: activeTab === 'test2' ? '#fff' : '#aaa',
+                  border: activeTab === 'test2' ? '2px solid #666' : '2px solid #444',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold'
+                }}
+              >
+                测试2
               </button>
             </div>
 
@@ -476,7 +900,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 overflowY: 'auto'
               }}
             >
-              {activeTab === 'speed' ? renderSpeedContent() : renderTestContent()}
+              {activeTab === 'speed' ? renderSpeedContent() : 
+               activeTab === 'test1' ? renderTest1Content() : renderTest2Content()}
             </div>
           </div>
 
