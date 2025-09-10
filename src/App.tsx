@@ -578,7 +578,8 @@ const GameApp: React.FC = () => {
               onOpenSettings={openSettings}
               // 移除调试用的立即死亡功能
               // onDebugKill={debugKillPlayer}
-              onTestDeath={testDeathScreen} // 添加测试死亡界面功能
+              // 移除测试死亡界面功能
+              // onTestDeath={testDeathScreen}
             />
             
             {/* 故事段落组件 */}

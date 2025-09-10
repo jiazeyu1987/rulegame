@@ -6,7 +6,7 @@ interface GameHeaderProps {
   onChangeProfession: () => void;
   onOpenSettings: () => void;
   // onDebugKill?: () => void; // 调试用：立即死亡（已移除）
-  onTestDeath?: () => void; // 测试死亡界面
+  // onTestDeath?: () => void; // 测试死亡界面（已移除）
 }
 
 const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings, onTestDeath }) => {
@@ -30,16 +30,17 @@ const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, 
         <div className="time-display" id="time-display">
           {formatTime(gameState.time)}
         </div>
-        <button 
+        {/* 移除设置按钮，因为左上角已经有设置按钮了 */}
+        {/* <button 
           className="settings-button" 
           id="settings-button"
           onClick={onOpenSettings}
           title="游戏设置"
         >
           ⚙️
-        </button>
-        {/* 测试死亡界面按钮 */}
-        {onTestDeath && (
+        </button> */}
+        {/* 移除测试死亡界面按钮 */}
+        {/* {onTestDeath && (
           <button 
             className="test-death-button" 
             id="test-death-button"
@@ -58,7 +59,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, 
           >
             死
           </button>
-        )}
+        )} */}
         {/* 移除调试用的立即死亡按钮，死亡应该通过故事节点触发 */}
         {/* {import.meta.env.DEV && onDebugKill && (
           <button 
