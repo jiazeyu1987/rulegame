@@ -552,23 +552,24 @@ const GameApp: React.FC = () => {
         console.log(`总共解析了 ${nodeCount} 个节点`);
       }
       
-      // 从主flowchart_data之后的内容中提取边
+      // 从主flowchart_data之后的内容中提取边 - 更新以处理time_change字段
       const afterMainFlowchart = pythonContent.substring(mainFlowchartEnd + 1);
       const connections = [];
       
-      // 在剩余内容中查找边对象
-      const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"\s*\}/g;
+      // 在剩余内容中查找边对象 - 更新以处理time_change字段
+      const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"(?:,\s*"time_change":\s*(\d+))?\s*\}/g;
       let edgeMatch;
       let edgeCount = 0;
       while ((edgeMatch = edgeObjectPattern.exec(afterMainFlowchart)) !== null) {
         connections.push({
           from: edgeMatch[1],
           to: edgeMatch[2],
-          condition: edgeMatch[3]
+          condition: edgeMatch[3],
+          timeChange: edgeMatch[4] ? parseInt(edgeMatch[4]) : 0 // 如果没有time_change字段，默认为0
         });
         edgeCount++;
         if (edgeCount <= 5) {
-          console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]})`);
+          console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]}) time: ${edgeMatch[4] || 0}min`);
         }
       }
       console.log(`总共解析了 ${edgeCount} 条边`);
@@ -670,13 +671,14 @@ const GameApp: React.FC = () => {
       // 查找从当前节点出发的连接
       const outgoingConnections = mapping.connections.filter(conn => conn.from === nodeId);
       
-      // 为每个连接创建选择项
+      // 为每个连接创建选择项 - 包含时间变化
       for (const conn of outgoingConnections) {
         const targetNodeLabel = mapping.nodes[conn.to];
         if (targetNodeLabel) {
           choices.push({
             text: conn.condition,
-            action: conn.to // 使用目标节点ID作为action
+            action: conn.to, // 使用目标节点ID作为action
+            timeChange: (conn as any).timeChange || 0 // 从连接中获取时间变化，默认为0
           });
         }
       }

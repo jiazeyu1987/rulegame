@@ -151,105 +151,105 @@ flowchart_data = {
         }
     },
     "edges": [
-        # N1 connections
-        {"from": "N1", "to": "N2", "label": "看纸条1"},
-        {"from": "N1", "to": "N3", "label": "观察房间"},
-        {"from": "N1", "to": "N4", "label": "直接开门"},
+        # N1 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N1", "to": "N2", "label": "看纸条1", "time_change": 15},
+        {"from": "N1", "to": "N3", "label": "观察房间", "time_change": 20},
+        {"from": "N1", "to": "N4", "label": "直接开门", "time_change": 10},
         
-        # N2 connections
-        {"from": "N2", "to": "N5", "label": "背下规则"},
-        {"from": "N2", "to": "N6", "label": "丢掉纸条"},
-        {"from": "N2", "to": "N7", "label": "藏进口袋"},
+        # N2 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N2", "to": "N5", "label": "背下规则", "time_change": 25},
+        {"from": "N2", "to": "N6", "label": "丢掉纸条", "time_change": 10},
+        {"from": "N2", "to": "N7", "label": "藏进口袋", "time_change": 15},
         
-        # N3 connections
-        {"from": "N3", "to": "N8", "label": "盯镜子"},
-        {"from": "N3", "to": "N9", "label": "开柜子"},
-        {"from": "N3", "to": "N10", "label": "开窗户"},
+        # N3 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N3", "to": "N8", "label": "盯镜子", "time_change": 30},
+        {"from": "N3", "to": "N9", "label": "开柜子", "time_change": 20},
+        {"from": "N3", "to": "N10", "label": "开窗户", "time_change": 15},
         
-        # N4 connections
-        {"from": "N4", "to": "DEAD1", "label": "打招呼"},
-        {"from": "N4", "to": "N1", "label": "回卧室"},
-        {"from": "N4", "to": "N11", "label": "继续走"},
+        # N4 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N4", "to": "DEAD1", "label": "打招呼", "time_change": 10},
+        {"from": "N4", "to": "N1", "label": "回卧室", "time_change": 5},
+        {"from": "N4", "to": "N11", "label": "继续走", "time_change": 20},
         
-        # N5 connections
-        {"from": "N5", "to": "N12", "label": "去厨房"},
-        {"from": "N5", "to": "N13", "label": "探索"},
-        {"from": "N5", "to": "N14", "label": "偷看厨房"},
+        # N5 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N5", "to": "N12", "label": "去厨房", "time_change": 25},
+        {"from": "N5", "to": "N13", "label": "探索", "time_change": 30},
+        {"from": "N5", "to": "N14", "label": "偷看厨房", "time_change": 15},
         
-        # N6 connections
-        {"from": "N6", "to": "N2", "label": "捡起来看"},
-        {"from": "N6", "to": "N4", "label": "直接开门"},
-        {"from": "N6", "to": "DEAD2", "label": "检查床底"},
+        # N6 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N6", "to": "N2", "label": "捡起来看", "time_change": 10},
+        {"from": "N6", "to": "N4", "label": "直接开门", "time_change": 5},
+        {"from": "N6", "to": "DEAD2", "label": "检查床底", "time_change": 20},
         
-        # N7 connections
-        {"from": "N7", "to": "N4", "label": "开门"},
-        {"from": "N7", "to": "N8", "label": "照镜子"},
-        {"from": "N7", "to": "N15", "label": "继续等待"},
+        # N7 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N7", "to": "N4", "label": "开门", "time_change": 10},
+        {"from": "N7", "to": "N8", "label": "照镜子", "time_change": 25},
+        {"from": "N7", "to": "N15", "label": "继续等待", "time_change": 30},
         
-        # N8 connections
-        {"from": "N8", "to": "DEAD3", "label": "继续凝视"},
-        {"from": "N8", "to": "N13", "label": "闭眼转身"},
-        {"from": "N8", "to": "DEAD4", "label": "伸手摸镜"},
+        # N8 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N8", "to": "DEAD3", "label": "继续凝视", "time_change": 30},
+        {"from": "N8", "to": "N13", "label": "闭眼转身", "time_change": 10},
+        {"from": "N8", "to": "DEAD4", "label": "伸手摸镜", "time_change": 15},
         
-        # N9 connections
-        {"from": "N9", "to": "N16", "label": "拿出纸条"},
-        {"from": "N9", "to": "DEAD5", "label": "丢掉娃娃"},
-        {"from": "N9", "to": "N5", "label": "关上柜子"},
+        # N9 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N9", "to": "N16", "label": "拿出纸条", "time_change": 20},
+        {"from": "N9", "to": "DEAD5", "label": "丢掉娃娃", "time_change": 10},
+        {"from": "N9", "to": "N5", "label": "关上柜子", "time_change": 15},
         
-        # N10 connections
-        {"from": "N10", "to": "DEAD6", "label": "敲玻璃"},
-        {"from": "N10", "to": "N5", "label": "退开"},
-        {"from": "N10", "to": "DEAD7", "label": "强拉"},
+        # N10 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N10", "to": "DEAD6", "label": "敲玻璃", "time_change": 25},
+        {"from": "N10", "to": "N5", "label": "退开", "time_change": 10},
+        {"from": "N10", "to": "DEAD7", "label": "强拉", "time_change": 20},
         
-        # N11 connections
-        {"from": "N11", "to": "N17", "label": "进入客厅"},
-        {"from": "N11", "to": "N1", "label": "折返卧室"},
-        {"from": "N11", "to": "N18", "label": "敲门"},
+        # N11 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N11", "to": "N17", "label": "进入客厅", "time_change": 30},
+        {"from": "N11", "to": "N1", "label": "折返卧室", "time_change": 15},
+        {"from": "N11", "to": "N18", "label": "敲门", "time_change": 20},
         
-        # N12 connections
-        {"from": "N12", "to": "N19", "label": "坐下"},
-        {"from": "N12", "to": "N20", "label": "看影子"},
-        {"from": "N12", "to": "N1", "label": "逃回卧室"},
+        # N12 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N12", "to": "N19", "label": "坐下", "time_change": 25},
+        {"from": "N12", "to": "N20", "label": "看影子", "time_change": 20},
+        {"from": "N12", "to": "N1", "label": "逃回卧室", "time_change": 10},
         
-        # N13 connections
-        {"from": "N13", "to": "N11", "label": "继续走廊"},
-        {"from": "N13", "to": "DAY2", "label": "回卧室休息"},
-        {"from": "N13", "to": "N18", "label": "乱开门"},
+        # N13 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N13", "to": "N11", "label": "继续走廊", "time_change": 20},
+        {"from": "N13", "to": "DAY2", "label": "回卧室休息", "time_change": 30},
+        {"from": "N13", "to": "N18", "label": "乱开门", "time_change": 15},
         
-        # N14 connections
-        {"from": "N14", "to": "DEAD1", "label": "继续偷看"},
-        {"from": "N14", "to": "N12", "label": "冲进厨房"},
-        {"from": "N14", "to": "N13", "label": "悄悄离开"},
+        # N14 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N14", "to": "DEAD1", "label": "继续偷看", "time_change": 25},
+        {"from": "N14", "to": "N12", "label": "冲进厨房", "time_change": 10},
+        {"from": "N14", "to": "N13", "label": "悄悄离开", "time_change": 15},
         
-        # N15 connections
-        {"from": "N15", "to": "DAY2", "label": "困意袭来 睡着"},
-        {"from": "N15", "to": "DEAD2", "label": "梦见镜子"},
-        {"from": "N15", "to": "N12", "label": "被呼唤拉走"},
+        # N15 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N15", "to": "DAY2", "label": "困意袭来 睡着", "time_change": 30},
+        {"from": "N15", "to": "DEAD2", "label": "梦见镜子", "time_change": 20},
+        {"from": "N15", "to": "N12", "label": "被呼唤拉走", "time_change": 15},
         
-        # N16 connections
-        {"from": "N16", "to": "N5", "label": "纸条燃烧"},
-        {"from": "N16", "to": "DEAD3", "label": "血迹扩散"},
-        {"from": "N16", "to": "N7", "label": "藏进口袋"},
+        # N16 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N16", "to": "N5", "label": "纸条燃烧", "time_change": 10},
+        {"from": "N16", "to": "DEAD3", "label": "血迹扩散", "time_change": 25},
+        {"from": "N16", "to": "N7", "label": "藏进口袋", "time_change": 15},
         
-        # N17 connections
-        {"from": "N17", "to": "N13", "label": "客厅电视亮起"},
-        {"from": "N17", "to": "DEAD4", "label": "陌生人坐沙发"},
-        {"from": "N17", "to": "DAY2", "label": "关灯返回卧室"},
+        # N17 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N17", "to": "N13", "label": "客厅电视亮起", "time_change": 20},
+        {"from": "N17", "to": "DEAD4", "label": "陌生人坐沙发", "time_change": 10},
+        {"from": "N17", "to": "DAY2", "label": "关灯返回卧室", "time_change": 30},
         
-        # N18 connections
-        {"from": "N18", "to": "DEAD5", "label": "开门"},
-        {"from": "N18", "to": "N13", "label": "听里面声音"},
-        {"from": "N18", "to": "N1", "label": "返回卧室"},
+        # N18 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N18", "to": "DEAD5", "label": "开门", "time_change": 15},
+        {"from": "N18", "to": "N13", "label": "听里面声音", "time_change": 20},
+        {"from": "N18", "to": "N1", "label": "返回卧室", "time_change": 10},
         
-        # N19 connections
-        {"from": "N19", "to": "DEAD6", "label": "食物变腐烂"},
-        {"from": "N19", "to": "N20", "label": "假装吃"},
-        {"from": "N19", "to": "N13", "label": "跑开"},
+        # N19 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N19", "to": "DEAD6", "label": "食物变腐烂", "time_change": 25},
+        {"from": "N19", "to": "N20", "label": "假装吃", "time_change": 20},
+        {"from": "N19", "to": "N13", "label": "跑开", "time_change": 15},
         
-        # N20 connections
-        {"from": "N20", "to": "DEAD7", "label": "发现影子异常"},
-        {"from": "N20", "to": "N12", "label": "装作没发现"},
-        {"from": "N20", "to": "N13", "label": "逃离厨房"}
+        # N20 connections - 时间配置：每个选择增加10-30分钟
+        {"from": "N20", "to": "DEAD7", "label": "发现影子异常", "time_change": 30},
+        {"from": "N20", "to": "N12", "label": "装作没发现", "time_change": 20},
+        {"from": "N20", "to": "N13", "label": "逃离厨房", "time_change": 25}
     ]
 }
 

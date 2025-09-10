@@ -459,19 +459,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         const afterMainFlowchart = pythonContent.substring(mainFlowchartEnd + 1);
         const connections = [];
         
-        // 在剩余内容中查找边对象
-        const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"\s*\}/g;
+        // 在剩余内容中查找边对象 - 更新以处理time_change字段
+        const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"(?:,\s*"time_change":\s*(\d+))?\s*\}/g;
         let edgeMatch;
         let edgeCount = 0;
         while ((edgeMatch = edgeObjectPattern.exec(afterMainFlowchart)) !== null) {
           connections.push({
             from: edgeMatch[1],
             to: edgeMatch[2],
-            condition: edgeMatch[3]
+            condition: edgeMatch[3],
+            timeChange: edgeMatch[4] ? parseInt(edgeMatch[4]) : 0 // 如果没有time_change字段，默认为0
           });
           edgeCount++;
           if (edgeCount <= 5) {
-            console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]})`);
+            console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]}) time: ${edgeMatch[4] || 0}min`);
           }
         }
         console.log(`总共解析了 ${edgeCount} 条边`);
