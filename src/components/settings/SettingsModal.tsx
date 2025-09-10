@@ -165,16 +165,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             boxShadow: '0 0 50px rgba(100, 100, 100, 0.5)'
           }}
         >
-          {/* 顶部标题和退出按钮 */}
+          {/* 顶部标题 */}
           <div 
             className="settings-header"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
               marginBottom: '2rem',
-              padding: '0 3rem'
+              textAlign: 'center'
             }}
           >
             <h2 
@@ -188,29 +184,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             >
               游戏设置
             </h2>
-            <button 
-              className="close-button"
-              onClick={onClose}
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: '#fff',
-                fontSize: '2rem',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                lineHeight: 1,
-                opacity: 0.8,
-                transition: 'opacity 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-            >
-              ×
-            </button>
           </div>
 
           {/* 主要内容区域 */}
@@ -282,6 +255,57 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             >
               {activeTab === 'speed' ? renderSpeedContent() : renderTestContent()}
             </div>
+          </div>
+
+          {/* 底部关闭按钮 */}
+          <div 
+            className="settings-footer"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '2rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid #444'
+            }}
+          >
+            <button 
+              className="close-button-text"
+              onClick={onClose}
+              style={{
+                background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+                color: 'white',
+                border: '2px solid #666',
+                borderRadius: '8px',
+                padding: '1rem 3rem',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+                e.currentTarget.style.borderColor = '#777';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(100, 100, 100, 0.5)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+                e.currentTarget.style.borderColor = '#666';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'translateY(1px)';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+            >
+              关闭
+            </button>
           </div>
         </div>
       </div>
