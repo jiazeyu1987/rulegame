@@ -252,6 +252,14 @@ const GameApp: React.FC = () => {
   //     };
   //   });
   // };
+
+  // 测试死亡界面 - 直接触发死亡状态
+  const testDeathScreen = () => {
+    console.log('TEST: Triggering death screen for testing');
+    console.log('Current isDead state:', isDead);
+    setIsDead(true);
+    console.log('After setting isDead to true');
+  };
   
   // 重新开始游戏
   const restartGame = () => {
@@ -570,6 +578,7 @@ const GameApp: React.FC = () => {
               onOpenSettings={openSettings}
               // 移除调试用的立即死亡功能
               // onDebugKill={debugKillPlayer}
+              onTestDeath={testDeathScreen} // 添加测试死亡界面功能
             />
             
             {/* 故事段落组件 */}
@@ -616,7 +625,7 @@ const GameApp: React.FC = () => {
       )}
       
       {/* 调试用：显示当前死亡状态 */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div className="debug-panel">
           Dead: {isDead ? 'YES' : 'NO'} | Sanity: {gameState.sanity} | Energy: {gameState.energy} | Hunger: {gameState.hunger}
           {/* 移除KILL PLAYER按钮，死亡应该通过故事节点触发 */}
@@ -628,7 +637,7 @@ const GameApp: React.FC = () => {
       )}
       
       {/* 调试用：显示当前死亡状态 */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div style={{ position: 'fixed', bottom: '10px', right: '10px', background: 'black', color: 'white', padding: '10px', zIndex: 10000 }}>
           Dead: {isDead ? 'YES' : 'NO'} | Sanity: {gameState.sanity} | Energy: {gameState.energy} | Hunger: {gameState.hunger}
         </div>

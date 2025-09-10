@@ -6,9 +6,10 @@ interface GameHeaderProps {
   onChangeProfession: () => void;
   onOpenSettings: () => void;
   // onDebugKill?: () => void; // 调试用：立即死亡（已移除）
+  onTestDeath?: () => void; // 测试死亡界面
 }
 
-const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings }) => {
+const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, onOpenSettings, onTestDeath }) => {
   // 格式化时间显示
   const formatTime = (time: number): string => {
     const hours = Math.floor(time);
@@ -37,8 +38,29 @@ const GameHeader: React.FC<GameHeaderProps> = ({ gameState, onChangeProfession, 
         >
           ⚙️
         </button>
+        {/* 测试死亡界面按钮 */}
+        {onTestDeath && (
+          <button 
+            className="test-death-button" 
+            id="test-death-button"
+            onClick={onTestDeath}
+            title="测试死亡界面"
+            style={{ 
+              backgroundColor: '#8b0000', 
+              color: 'white', 
+              marginLeft: '5px',
+              border: '1px solid #ff4444',
+              borderRadius: '4px',
+              padding: '5px 8px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            死
+          </button>
+        )}
         {/* 移除调试用的立即死亡按钮，死亡应该通过故事节点触发 */}
-        {/* {process.env.NODE_ENV === 'development' && onDebugKill && (
+        {/* {import.meta.env.DEV && onDebugKill && (
           <button 
             className="debug-kill-button" 
             id="debug-kill-button"
