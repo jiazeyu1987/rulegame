@@ -6,7 +6,8 @@ import RuleNavigation from './components/rules/RuleNavigation';
 import ClearRules from './components/rules/ClearRules';
 import PassageComponent from './components/game/Passage';
 import Choices from './components/game/Choices';
-import TestWindow from './components/game/TestWindow';
+// 测试窗口功能已整合到设置弹窗中，移除独立组件
+// import TestWindow from './components/game/TestWindow';
 import SettingsModal from './components/settings/SettingsModal';
 import DeathScreen from './components/game/DeathScreen';
 
@@ -607,8 +608,8 @@ const GameApp: React.FC = () => {
             <ClearRules clearRules={clearRules} />
           </div>
           
-          {/* 测试窗口组件 */}
-          <TestWindow onTestSubmit={handleTestSubmit} />
+          {/* 测试窗口功能已整合到设置弹窗中，移除独立组件 */}
+          {/* <TestWindow onTestSubmit={handleTestSubmit} /> */}
         </div>
       </div>
       
@@ -618,6 +619,7 @@ const GameApp: React.FC = () => {
         onClose={closeSettings}
         currentSpeed={textSpeed}
         onSpeedChange={changeTextSpeed}
+        onTestSubmit={handleTestSubmit}
       />
       
       {/* 死亡屏幕 */}

@@ -1,20 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentSpeed: number;
   onSpeedChange: (speed: number) => void;
+  onTestSubmit: (input: string) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
   isOpen, 
   onClose, 
   currentSpeed, 
-  onSpeedChange 
+  onSpeedChange,
+  onTestSubmit
 }) => {
+  // 所有Hook必须在组件顶层，在任何条件语句之前
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'speed' | 'test'>('speed');
+  const [testInput, setTestInput] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -27,6 +32,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   }, [isOpen]);
 
+  // 注意：Hook调用必须在任何return语句之前
   if (!isOpen) return null;
 
   // 文字速度选项
@@ -98,20 +104,237 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     </div>
   );
 
-  // 渲染测试内容
-  const renderTestContent = () => (
-    <div className="test-content" style={{ textAlign: 'center', padding: '2rem' }}>
-      <h3 style={{ color: '#ccc', fontSize: '1.5rem', marginBottom: '1rem' }}>测试功能</h3>
-      <p style={{ color: '#999', fontSize: '1.2rem', lineHeight: '1.8' }}>
-        这是一个测试功能
-      </p>
-      <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'rgba(50, 50, 50, 0.5)', borderRadius: '10px' }}>
-        <p style={{ color: '#aaa', fontSize: '1rem' }}>
-          更多测试功能正在开发中...
-        </p>
+  // 渲染测试内容 - 包含完整的测试窗口功能
+  const renderTestContent = () => {
+
+    // 解析mermaid内容并映射到游戏场景
+    const parseMermaidToScene = (mermaidContent: string) => {
+      const lines = mermaidContent.split('\n');
+      const nodes: Record<string, string> = {};
+      const connections: Array<{from: string, to: string, condition: string}> = [];
+      
+      for (const line of lines) {
+        const nodeMatch = line.match(/([A-Z0-9_]+)\["(.+?)"\]/);
+        if (nodeMatch) {
+          const nodeId = nodeMatch[1];
+          const nodeLabel = nodeMatch[2];
+          nodes[nodeId] = nodeLabel;
+        }
+        
+        const connectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*\|(.+?)\|\s*([A-Z0-9_]+)/);
+        if (connectionMatch) {
+          const condition = connectionMatch[2].replace(/^"(.+(?="$))"$/, '$1');
+          connections.push({
+            from: connectionMatch[1],
+            to: connectionMatch[3],
+            condition: condition
+          });
+        }
+        
+        const simpleConnectionMatch = line.match(/([A-Z0-9_]+)\s*-->\s*([A-Z0-9_]+)/);
+        if (simpleConnectionMatch) {
+          connections.push({
+            from: simpleConnectionMatch[1],
+            to: simpleConnectionMatch[2],
+            condition: '默认'
+          });
+        }
+      }
+      
+      return { nodes, connections };
+    };
+
+    const handleTestSubmit = () => {
+      if (testInput.trim()) {
+        const sceneMapping = parseMermaidToScene(testInput);
+        console.log('测试解析结果:', sceneMapping);
+        // 保存到localStorage
+        localStorage.setItem('lastStoryContent', testInput);
+        // 调用父组件的onTestSubmit
+        onTestSubmit(testInput);
+      }
+    };
+
+    const handleFileRead = () => {
+      fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setTestInput(content);
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    const handleSave = () => {
+      if (testInput.trim()) {
+        localStorage.setItem('lastStoryContent', testInput);
+      }
+    };
+
+    const handleLoad = () => {
+      const savedContent = localStorage.getItem('lastStoryContent');
+      if (savedContent) {
+        setTestInput(savedContent);
+        onTestSubmit(savedContent);
+      }
+    };
+
+    return (
+      <div className="test-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <h3 style={{ color: '#ccc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>故事测试功能</h3>
+          <p style={{ color: '#999', fontSize: '1rem' }}>
+            在这里输入或加载mermaid格式的故事内容，测试故事解析功能
+          </p>
+        </div>
+        
+        {/* 文本输入区域 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+          <textarea
+            value={testInput}
+            onChange={(e) => setTestInput(e.target.value)}
+            placeholder="请输入mermaid内容，例如：\nflowchart TD\nN1[卧室醒来] -->|看纸条| N2[阅读规则]"
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(40, 40, 40, 0.8)',
+              border: '2px solid #555',
+              borderRadius: '8px',
+              color: '#fff',
+              padding: '1rem',
+              fontSize: '1rem',
+              fontFamily: 'monospace',
+              resize: 'vertical',
+              minHeight: '200px'
+            }}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".md,.txt,.mermaid"
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* 操作按钮区域 */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleFileRead}
+            style={{
+              flex: 1,
+              minWidth: '120px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            读取文件
+          </button>
+          
+          <button
+            onClick={handleTestSubmit}
+            style={{
+              flex: 1,
+              minWidth: '140px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            解析并映射场景
+          </button>
+          
+          <button
+            onClick={handleSave}
+            style={{
+              flex: 1,
+              minWidth: '100px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            保存故事
+          </button>
+          
+          <button
+            onClick={handleLoad}
+            style={{
+              flex: 1,
+              minWidth: '100px',
+              background: 'linear-gradient(135deg, #4a5568, #2d3748)',
+              color: 'white',
+              border: '2px solid #666',
+              borderRadius: '6px',
+              padding: '0.8rem 1.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #5a6578, #3d4758)';
+              e.currentTarget.style.borderColor = '#777';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(135deg, #4a5568, #2d3748)';
+              e.currentTarget.style.borderColor = '#666';
+            }}
+          >
+            加载故事
+          </button>
+        </div>
       </div>
-    </div>
   );
+};
 
   return (
     <div 
