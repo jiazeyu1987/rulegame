@@ -556,8 +556,8 @@ const GameApp: React.FC = () => {
       const afterMainFlowchart = pythonContent.substring(mainFlowchartEnd + 1);
       const connections = [];
       
-      // 在剩余内容中查找边对象 - 更新以处理time_change字段
-      const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"(?:,\s*"time_change":\s*(\d+))?\s*\}/g;
+      // 在剩余内容中查找边对象 - 更新以处理所有属性字段
+      const edgeObjectPattern = /\{\s*"from":\s*"([^"]+)",\s*"to":\s*"([^"]+)",\s*"label":\s*"([^"]*)"(?:,\s*"time_change":\s*(\d+))?(?:,\s*"hunger_change":\s*(-?\d+))?(?:,\s*"energy_change":\s*(-?\d+))?(?:,\s*"sanity_change":\s*(-?\d+))?(?:,\s*"strength_change":\s*(-?\d+))?(?:,\s*"speed_change":\s*(-?\d+))?(?:,\s*"luck_change":\s*(-?\d+))?\s*\}/g;
       let edgeMatch;
       let edgeCount = 0;
       while ((edgeMatch = edgeObjectPattern.exec(afterMainFlowchart)) !== null) {
@@ -565,11 +565,18 @@ const GameApp: React.FC = () => {
           from: edgeMatch[1],
           to: edgeMatch[2],
           condition: edgeMatch[3],
-          timeChange: edgeMatch[4] ? parseInt(edgeMatch[4]) : 0 // 如果没有time_change字段，默认为0
+          timeChange: edgeMatch[4] ? parseInt(edgeMatch[4]) : 0,
+          hungerChange: edgeMatch[5] ? parseInt(edgeMatch[5]) : 0,
+          energyChange: edgeMatch[6] ? parseInt(edgeMatch[6]) : 0,
+          sanityChange: edgeMatch[7] ? parseInt(edgeMatch[7]) : 0,
+          strengthChange: edgeMatch[8] ? parseInt(edgeMatch[8]) : 0,
+          speedChange: edgeMatch[9] ? parseInt(edgeMatch[9]) : 0,
+          luckChange: edgeMatch[10] ? parseInt(edgeMatch[10]) : 0
         });
         edgeCount++;
-        if (edgeCount <= 5) {
-          console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]}) time: ${edgeMatch[4] || 0}min`);
+        if (edgeCount <= 3) { // 显示前3个边以验证属性配置
+          console.log(`解析边 ${edgeCount}: ${edgeMatch[1]} -> ${edgeMatch[2]} (${edgeMatch[3]})`);
+          console.log(`  时间: ${edgeMatch[4] || 0}min, 饱食: ${edgeMatch[5] || 0}, 体力: ${edgeMatch[6] || 0}, 理智: ${edgeMatch[7] || 0}, 力量: ${edgeMatch[8] || 0}, 速度: ${edgeMatch[9] || 0}, 运气: ${edgeMatch[10] || 0}`);
         }
       }
       console.log(`总共解析了 ${edgeCount} 条边`);
@@ -671,14 +678,20 @@ const GameApp: React.FC = () => {
       // 查找从当前节点出发的连接
       const outgoingConnections = mapping.connections.filter(conn => conn.from === nodeId);
       
-      // 为每个连接创建选择项 - 包含时间变化
+      // 为每个连接创建选择项 - 包含所有属性变化
       for (const conn of outgoingConnections) {
         const targetNodeLabel = mapping.nodes[conn.to];
         if (targetNodeLabel) {
           choices.push({
             text: conn.condition,
             action: conn.to, // 使用目标节点ID作为action
-            timeChange: (conn as any).timeChange || 0 // 从连接中获取时间变化，默认为0
+            timeChange: (conn as any).timeChange || 0, // 从连接中获取时间变化，默认为0
+            hungerChange: (conn as any).hungerChange || 0, // 饱食度变化
+            energyChange: (conn as any).energyChange || 0, // 体力变化
+            sanityChange: (conn as any).sanityChange || 0, // 理智值变化
+            strengthChange: (conn as any).strengthChange || 0, // 力量变化
+            speedChange: (conn as any).speedChange || 0, // 速度变化
+            luckChange: (conn as any).luckChange || 0 // 运气变化
           });
         }
       }
