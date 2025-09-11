@@ -34,6 +34,43 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   }, [isOpen]);
 
+  // 自动加载上次保存的内容
+  useEffect(() => {
+    if (isOpen) {
+      const lastContentType = localStorage.getItem('lastContentType');
+      if (lastContentType === 'python') {
+        // 如果上次使用的是Python，自动切换到Python标签并加载内容
+        setActiveTab('test2');
+        const savedContent = localStorage.getItem('lastPythonContent');
+        if (savedContent) {
+          setTest2Input(savedContent);
+        }
+      } else if (lastContentType === 'mermaid') {
+        // 如果上次使用的是Mermaid，自动切换到Mermaid标签并加载内容
+        setActiveTab('test1');
+        const savedContent = localStorage.getItem('lastMermaidContent');
+        if (savedContent) {
+          setTest1Input(savedContent);
+        }
+      }
+    }
+  }, [isOpen]);
+
+  // 当切换标签时，自动加载对应的内容
+  useEffect(() => {
+    if (activeTab === 'test2') {
+      const savedContent = localStorage.getItem('lastPythonContent');
+      if (savedContent && !test2Input) {
+        setTest2Input(savedContent);
+      }
+    } else if (activeTab === 'test1') {
+      const savedContent = localStorage.getItem('lastMermaidContent');
+      if (savedContent && !test1Input) {
+        setTest1Input(savedContent);
+      }
+    }
+  }, [activeTab]);
+
   // 注意：Hook调用必须在任何return语句之前
   if (!isOpen) return null;
 
@@ -110,8 +147,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleSave = () => {
     if (activeTab === 'test1' && test1Input.trim()) {
       localStorage.setItem('lastMermaidContent', test1Input);
+      localStorage.setItem('lastContentType', 'mermaid');
     } else if (activeTab === 'test2' && test2Input.trim()) {
       localStorage.setItem('lastPythonContent', test2Input);
+      localStorage.setItem('lastContentType', 'python');
     }
   };
 
@@ -589,7 +628,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
           <textarea
             value={test2Input}
-            onChange={(e) => setTest2Input(e.target.value)}
+            onChange={(e) => {
+              setTest2Input(e.target.value);
+              // 自动保存到localStorage（但不设置内容类型，避免干扰记忆功能）
+              localStorage.setItem('test2Input', e.target.value);
+            }}
             placeholder={`请输入Python故事脚本，例如：
 flowchart_data = {
     "title": "第一天故事",

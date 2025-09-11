@@ -161,6 +161,69 @@ const GameApp: React.FC = () => {
   
   // 死亡状态
   const [isDead, setIsDead] = useState<boolean>(false);
+
+  // 自动加载Python故事文件
+  const autoLoadPythonStory = async () => {
+    try {
+      console.log('尝试自动加载Python故事文件...');
+      
+      // 尝试加载day1_story.py文件
+      const response = await fetch('/day1_story.py');
+      if (response.ok) {
+        const pythonContent = await response.text();
+        console.log('成功加载day1_story.py文件，内容长度:', pythonContent.length);
+        
+        if (pythonContent.includes('flowchart_data') && pythonContent.includes('start_node')) {
+          console.log('检测到Python故事格式，开始自动解析...');
+          
+          // 自动解析并加载故事
+          handleTestSubmit(pythonContent, 'python');
+          
+          // 保存到localStorage以便后续使用
+          localStorage.setItem('lastContentType', 'python');
+          localStorage.setItem('lastPythonContent', pythonContent);
+          
+          console.log('✅ Python故事文件已自动加载并解析');
+          return true;
+        } else {
+          console.log('文件内容不符合Python故事格式');
+        }
+      } else {
+        console.log('无法加载day1_story.py文件，状态码:', response.status);
+      }
+    } catch (error) {
+      console.error('自动加载Python故事文件时出错:', error);
+    }
+    return false;
+  };
+
+  // 自动解析测试2弹框中的Python内容的函数
+  const autoParseTest2Content = () => {
+    try {
+      // 从localStorage获取测试2的输入内容
+      const test2Content = localStorage.getItem('test2Input');
+      
+      if (test2Content && test2Content.trim()) {
+        console.log('检测到测试2弹框中有内容，尝试自动解析...');
+        
+        // 检查是否是Python格式（简单的格式检查）
+        if (test2Content.includes('flowchart_data') && test2Content.includes('start_node')) {
+          console.log('检测到Python格式，开始自动解析...');
+          
+          // 自动解析内容
+          handleTestSubmit(test2Content, 'python');
+          
+          console.log('✅ 测试2弹框中的Python内容已自动解析');
+        } else {
+          console.log('测试2弹框中的内容不是Python格式，跳过自动解析');
+        }
+      } else {
+        console.log('测试2弹框中没有内容，跳过自动解析');
+      }
+    } catch (error) {
+      console.error('自动解析测试2内容时出错:', error);
+    }
+  };
   
   // 组件挂载时加载保存的故事和设置
   useEffect(() => {
@@ -173,14 +236,32 @@ const GameApp: React.FC = () => {
       }
     }
     
-    // 从localStorage获取上次保存的故事内容
-    const lastStoryContent = localStorage.getItem('lastStoryContent');
-    if (lastStoryContent && lastStoryContent.trim()) {
-      // 如果有保存的故事内容，自动加载（延迟执行避免双刷新）
-      setTimeout(() => {
-        handleTestSubmit(lastStoryContent);
-      }, 100);
-    }
+    // 首先尝试自动加载Python故事文件
+    setTimeout(async () => {
+      const loaded = await autoLoadPythonStory();
+      if (!loaded) {
+        // 如果自动加载失败，再尝试从localStorage加载保存的内容
+        const lastContentType = localStorage.getItem('lastContentType');
+        const lastMermaidContent = localStorage.getItem('lastMermaidContent');
+        const lastPythonContent = localStorage.getItem('lastPythonContent');
+        
+        if (lastContentType === 'python' && lastPythonContent && lastPythonContent.trim()) {
+          // 如果有保存的Python故事内容，使用Python解析器
+          handleTestSubmit(lastPythonContent, 'python');
+        } else if (lastContentType === 'mermaid' && lastMermaidContent && lastMermaidContent.trim()) {
+          // 如果有保存的Mermaid故事内容，使用Mermaid解析器
+          handleTestSubmit(lastMermaidContent, 'mermaid');
+        } else if (lastMermaidContent && lastMermaidContent.trim()) {
+          // 向后兼容：如果没有内容类型但有Mermaid内容，使用Mermaid解析器
+          handleTestSubmit(lastMermaidContent, 'mermaid');
+        }
+      }
+    }, 100);
+    
+    // 自动解析测试2弹框中的Python内容（如果有的话）
+    setTimeout(() => {
+      autoParseTest2Content();
+    }, 200); // 延迟稍长，确保其他初始化完成
   }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
   
   // 死亡检测逻辑
@@ -279,12 +360,20 @@ const GameApp: React.FC = () => {
     // 清除死亡状态
     setIsDead(false);
     
-    // 获取上次保存的故事内容
-    const lastStoryContent = localStorage.getItem('lastStoryContent');
+    // 获取上次保存的故事内容和类型
+    const lastContentType = localStorage.getItem('lastContentType');
+    const lastMermaidContent = localStorage.getItem('lastMermaidContent');
+    const lastPythonContent = localStorage.getItem('lastPythonContent');
     
-    if (lastStoryContent && lastStoryContent.trim()) {
-      // 如果有保存的故事内容，使用现有的handleTestSubmit函数来解析和加载
-      handleTestSubmit(lastStoryContent);
+    if (lastContentType === 'python' && lastPythonContent && lastPythonContent.trim()) {
+      // 如果有保存的Python故事内容，使用Python解析器
+      handleTestSubmit(lastPythonContent, 'python');
+    } else if (lastContentType === 'mermaid' && lastMermaidContent && lastMermaidContent.trim()) {
+      // 如果有保存的Mermaid故事内容，使用Mermaid解析器
+      handleTestSubmit(lastMermaidContent, 'mermaid');
+    } else if (lastMermaidContent && lastMermaidContent.trim()) {
+      // 向后兼容：如果没有内容类型但有Mermaid内容，使用Mermaid解析器
+      handleTestSubmit(lastMermaidContent, 'mermaid');
     } else {
       // 如果没有保存的故事内容，重置到默认状态
       setPassages(defaultPassages);
