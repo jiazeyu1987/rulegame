@@ -8,10 +8,12 @@ export class ConditionEvaluator {
   private conditions: Condition[] = [];
   private cache: Map<string, EvaluationResult> = new Map();
   private cacheTimeout = 1000; // 1秒缓存
+  private debugMode = false; // 调试模式
 
-  constructor(conditions: Condition[]) {
+  constructor(conditions: Condition[], debugMode: boolean = false) {
     // 按优先级降序排序，高优先级条件先处理
     this.conditions = conditions.sort((a, b) => b.priority - a.priority);
+    this.debugMode = debugMode;
   }
 
   /**
@@ -118,32 +120,72 @@ export class ConditionEvaluator {
   }
 
   /**
-   * 评估表达式
+   * 评估表达式 - 优化错误处理
    */
   private evaluateExpression(expr: string, state: GameState): boolean {
     try {
       // 替换属性引用和函数调用
       const processedExpr = this.processExpression(expr, state);
       
+      // Debug logging for troubleshooting
+      if (this.debugMode || process.env.NODE_ENV === 'development') {
+        console.log(`Evaluating expression: ${expr}`);
+        console.log(`Processed expression: ${processedExpr}`);
+      }
+      
       // 安全评估处理后的表达式
-      return this.safeEvaluate(processedExpr);
+      const result = this.safeEvaluate(processedExpr);
+      
+      if (this.debugMode || process.env.NODE_ENV === 'development') {
+        console.log(`Result: ${result}`);
+      }
+      
+      return result;
     } catch (error) {
-      console.error('Expression evaluation error:', error);
+      // 只在开发环境或调试模式下输出详细错误信息
+      if (process.env.NODE_ENV === 'development' || this.debugMode) {
+        console.warn('Expression evaluation failed:', expr, error);
+      }
       return false;
     }
   }
 
   /**
-   * 处理表达式，替换变量引用
+   * 处理表达式，替换变量引用 - 修复版本，支持直接属性访问
    */
   private processExpression(expr: string, state: GameState): string {
     let processedExpr = expr;
     
+    if (this.debugMode || process.env.NODE_ENV === 'development') {
+      console.log(`Original expression: ${expr}`);
+    }
+    
+    // 首先处理直接属性访问: sanity -> attributes.sanity
+    // 修复：确保不匹配已经带有attributes.前缀的属性
+    const directAttrPatterns = ['health', 'hunger', 'sanity', 'intelligence', 'strength', 'speed', 'luck', 'profession'];
+    directAttrPatterns.forEach(attr => {
+      // 使用负向前瞻确保不匹配attributes.health中的health
+      const regex = new RegExp(`(?<!attributes\\.)\\b${attr}\\b`, 'g');
+      processedExpr = processedExpr.replace(regex, `attributes.${attr}`);
+    });
+    
+    if (this.debugMode || process.env.NODE_ENV === 'development') {
+      console.log(`After direct attribute replacement: ${processedExpr}`);
+    }
+    
     // 替换属性访问: attributes.health -> 85
     processedExpr = processedExpr.replace(/attributes\.(\w+)/g, (match, attr) => {
       const value = (state.attributes as any)[attr];
-      return value !== undefined ? String(value) : '0';
+      const result = value !== undefined ? String(value) : '0';
+      if (this.debugMode || process.env.NODE_ENV === 'development') {
+        console.log(`Replacing ${match} with ${result} (attr: ${attr}, value: ${value})`);
+      }
+      return result;
     });
+    
+    if (this.debugMode || process.env.NODE_ENV === 'development') {
+      console.log(`After attribute value replacement: ${processedExpr}`);
+    }
     
     // 替换库存长度: inventory.length -> 3
     processedExpr = processedExpr.replace(/inventory\.length/g, String(state.inventory.length));
@@ -163,24 +205,46 @@ export class ConditionEvaluator {
     processedExpr = processedExpr.replace(/\btime\b/g, String(state.time));
     processedExpr = processedExpr.replace(/\blocation\b/g, `'${state.location}'`);
 
+    if (this.debugMode || process.env.NODE_ENV === 'development') {
+      console.log(`Final processed expression: ${processedExpr}`);
+    }
+
     return processedExpr;
   }
 
   /**
-   * 安全评估处理后的表达式
+   * 安全评估处理后的表达式 - 修复版本，允许游戏相关属性访问
    */
   private safeEvaluate(expr: string): boolean {
-    // 只允许安全的字符和运算符
-    const safePattern = /^[0-9\s+\-*/><=!&|()'."]+$/;
-    if (!safePattern.test(expr)) {
-      throw new Error('Unsafe expression');
-    }
-
-    // 使用Function构造器安全评估
     try {
+      // 检查是否包含危险的函数调用和关键字
+      const dangerousPatterns = [
+        /\b(eval|Function|setTimeout|setInterval|require|module|exports|global|process|constructor|prototype|__proto__)\b/,
+        /\b(delete|void|with|debugger)\b/,
+        /\\/,  // 阻止转义字符
+        /\$/,  // 阻止jQuery等
+        /\[\s*['"]\s*[a-zA-Z_$][a-zA-Z0-9_$]*\s*['"]\s*\]/,  // 阻止数组访问：['key'] 或 ["key"]
+        /\[\s*[0-9]+\s*\]/,  // 阻止数字索引访问：[0]
+        /\{\s*[a-zA-Z_$]/   // 阻止对象构造：{key
+      ];
+
+      // 首先检查危险模式
+      for (const pattern of dangerousPatterns) {
+        if (pattern.test(expr)) {
+          if (this.debugMode) {
+            console.warn('Expression contains dangerous patterns:', expr);
+          }
+          return false;
+        }
+      }
+
+      // 使用Function构造器安全评估
       const result = new Function(`return (${expr})`)();
       return Boolean(result);
-    } catch {
+    } catch (error) {
+      if (this.debugMode) {
+        console.warn('Expression evaluation failed:', expr, error);
+      }
       return false;
     }
   }
@@ -214,6 +278,31 @@ export class ConditionEvaluator {
       if (pattern.test(expr)) {
         throw new Error('Expression contains unsafe patterns');
       }
+    }
+
+    // 检查表达式是否完整 - 不能以下列操作符结尾
+    const incompletePatterns = [
+      /[+\-*/%]$/,     // 以算术运算符结尾
+      /[=<>!]$/,       // 以比较运算符结尾
+      /&&$/,           // 以逻辑与结尾
+      /\|\|$/,         // 以逻辑或结尾
+      /\.$/,           // 以点号结尾
+      /\b(and|or|not)$/i  // 以逻辑关键字结尾
+    ];
+
+    for (const pattern of incompletePatterns) {
+      if (pattern.test(expr.trim())) {
+        throw new Error('Expression appears to be incomplete');
+      }
+    }
+
+    // 检查是否有不完整的函数调用或属性访问
+    if (/\w+\.$/.test(expr.trim())) {
+      throw new Error('Expression contains incomplete property access');
+    }
+
+    if (/\w+\($/.test(expr.trim())) {
+      throw new Error('Expression contains incomplete function call');
     }
   }
 

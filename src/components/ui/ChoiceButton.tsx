@@ -28,6 +28,7 @@ export const ChoiceButton: React.FC<ChoiceButtonProps> = React.memo(({
 
   const handleClick = () => {
     if (!disabled && !loading) {
+      if (isPressed) return; // Prevent rapid clicks
       setIsPressed(true);
       onClick();
       setTimeout(() => setIsPressed(false), 150);

@@ -20,15 +20,21 @@ describe('StorageManager - 调试测试', () => {
       playerName: 'TestPlayer',
       profession: '学生',
       gameState: {
+        attributes: {
+          health: 100,
+          sanity: 100,
+          hunger: 50,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          profession: '学生'
+        },
+        inventory: [],
+        flags: {},
+        day: 1,
         time: 0,
-        profession: '学生',
-        hunger: 50,
-        energy: 100,
-        sanity: 100,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50
+        location: 'dormitory'
       },
       currentDay: 1,
       currentNode: 'start',
@@ -69,22 +75,34 @@ describe('StorageManager - 调试测试', () => {
     if ('gameState' in testData) {
       console.log('游戏状态类型:', typeof testData.gameState);
       const gameState = testData.gameState;
-      const requiredStats = [
-        'time', 'profession', 'hunger', 'energy', 'sanity',
-        'intelligence', 'strength', 'speed', 'luck'
-      ];
       
-      for (const stat of requiredStats) {
-        console.log(`游戏状态字段 ${stat}:`, stat in gameState, typeof gameState[stat]);
-        if (!(stat in gameState) || typeof gameState[stat] !== 'number') {
-          console.log(`游戏状态验证失败: ${stat}`);
+      // 检查必需的游戏状态属性
+      const requiredGameStateProps = ['attributes', 'inventory', 'flags', 'day', 'time', 'location'];
+      for (const prop of requiredGameStateProps) {
+        console.log(`游戏状态属性 ${prop}:`, prop in gameState);
+        if (!(prop in gameState)) {
+          console.log(`游戏状态缺少属性: ${prop}`);
         }
       }
       
-      // 检查数值范围
-      console.log('饥饿值范围:', gameState.hunger, gameState.hunger < 0 || gameState.hunger > 100);
-      console.log('能量值范围:', gameState.energy, gameState.energy < 0 || gameState.energy > 100);
-      console.log('理智值范围:', gameState.sanity, gameState.sanity < 0 || gameState.sanity > 100);
+      // 检查属性对象
+      if ('attributes' in gameState) {
+        const attributes = gameState.attributes;
+        const requiredStats = [
+          'health', 'sanity', 'hunger', 'intelligence', 'strength', 'speed', 'luck', 'profession'
+        ];
+        
+        for (const stat of requiredStats) {
+          console.log(`属性字段 ${stat}:`, stat in attributes, typeof (attributes as any)[stat]);
+          if (!(stat in attributes)) {
+            console.log(`属性验证失败: ${stat}`);
+          }
+        }
+        
+        // 检查数值范围
+        console.log('饥饿值范围:', attributes.hunger, attributes.hunger < 0 || attributes.hunger > 100);
+        console.log('理智值范围:', attributes.sanity, attributes.sanity < 0 || attributes.sanity > 100);
+      }
     }
     
     const result = storageManager.validate(testData);
@@ -99,15 +117,21 @@ describe('StorageManager - 调试测试', () => {
       playerName: 'Test',
       profession: '学生' as Profession,
       gameState: {
+        attributes: {
+          health: 100,
+          sanity: 100,
+          hunger: 50,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          profession: '学生' as Profession
+        },
+        inventory: [],
+        flags: {},
+        day: 1,
         time: 0,
-        profession: '学生' as Profession,
-        hunger: 50,
-        energy: 100,
-        sanity: 100,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50
+        location: 'dormitory'
       },
       rulePapers: [],
       clearRules: [],

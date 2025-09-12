@@ -20,15 +20,21 @@ describe('StorageManager - 简化测试', () => {
       playerName: 'TestPlayer',
       profession: '学生' as Profession,
       gameState: {
+        attributes: {
+          health: 100,
+          sanity: 100,
+          hunger: 50,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          profession: '学生' as Profession
+        },
+        inventory: [],
+        flags: {},
+        day: 1,
         time: 0,
-        profession: '学生' as Profession,
-        hunger: 50,
-        energy: 100,
-        sanity: 100,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50
+        location: 'dormitory'
       },
       rulePapers: [],
       clearRules: [],
@@ -57,15 +63,21 @@ describe('StorageManager - 简化测试', () => {
       playerName: 'TestPlayer',
       profession: '学生',
       gameState: {
+        attributes: {
+          health: 100,
+          sanity: 100,
+          hunger: 50,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          profession: '学生'
+        },
+        inventory: [],
+        flags: {},
+        day: 1,
         time: 0,
-        profession: '学生',
-        hunger: 50,
-        energy: 100,
-        sanity: 100,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50
+        location: 'dormitory'
       },
       currentDay: 1,
       currentNode: 'start',
@@ -90,15 +102,21 @@ describe('StorageManager - 简化测试', () => {
       playerName: 'TestPlayer',
       profession: '学生' as Profession,
       gameState: {
+        attributes: {
+          health: 100,
+          sanity: 100,
+          hunger: 50,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          profession: '学生' as Profession
+        },
+        inventory: [],
+        flags: {},
+        day: 1,
         time: 0,
-        profession: '学生' as Profession,
-        hunger: 50,
-        energy: 100,
-        sanity: 100,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50
+        location: 'dormitory'
       },
       rulePapers: [],
       clearRules: [],
@@ -140,15 +158,21 @@ describe('StorageManager - 简化测试', () => {
       playerName: 'PerformanceTest',
       profession: '学生' as Profession,
       gameState: {
+        attributes: {
+          health: 100,
+          sanity: 100,
+          hunger: 50,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          profession: '学生' as Profession
+        },
+        inventory: [],
+        flags: {},
+        day: 1,
         time: 0,
-        profession: '学生' as Profession,
-        hunger: 50,
-        energy: 100,
-        sanity: 100,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50
+        location: 'dormitory'
       },
       rulePapers: [],
       clearRules: [],

@@ -17,8 +17,11 @@ export interface PlayerAttributes {
   strength: number;      // 力量 (0-100)
   speed: number;         // 速度 (0-100)
   luck: number;          // 运气 (0-100)
-  profession: string;    // 职业
+  profession: Profession; // 职业
 }
+
+// 职业类型
+export type Profession = '学生' | '老人' | '残疾人' | '律师' | '医生' | '教师' | '工人' | '警察' | '艺术家' | '商人' | string;
 
 // 条件评估结果
 export interface EvaluationResult {

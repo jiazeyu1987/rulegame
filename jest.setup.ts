@@ -1,3 +1,4 @@
+// Import jest-dom to extend Jest matchers
 import '@testing-library/jest-dom';
 
 // Mock localStorage for testing

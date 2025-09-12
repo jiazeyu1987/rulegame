@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { ChoiceButton } from '../../src/components/ui/ChoiceButton';
 
@@ -26,7 +27,7 @@ describe('ChoiceButton', () => {
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 
-  test('should handle keyboard navigation', () => {
+  test('should handle keyboard navigation', async () => {
     render(<ChoiceButton text="键盘测试" onClick={mockOnClick} />);
     
     const button = screen.getByRole('button');
@@ -35,7 +36,8 @@ describe('ChoiceButton', () => {
     fireEvent.keyDown(button, { key: 'Enter' });
     expect(mockOnClick).toHaveBeenCalledTimes(1);
     
-    // 测试Space键
+    // 测试Space键 (等待一小段时间避免快速点击检测)
+    await new Promise(resolve => setTimeout(resolve, 200));
     fireEvent.keyDown(button, { key: ' ' });
     expect(mockOnClick).toHaveBeenCalledTimes(2);
   });

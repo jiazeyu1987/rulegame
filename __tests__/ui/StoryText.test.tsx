@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { StoryText } from '../../src/components/ui/StoryText';
 
@@ -8,24 +9,27 @@ describe('StoryText', () => {
     jest.clearAllMocks();
   });
 
-  test('should render text content correctly', () => {
+  test('should render text content correctly', async () => {
     const testContent = '这是一个测试故事文本。';
     render(<StoryText content={testContent} speed="fast" />);
     
-    expect(screen.getByText(testContent)).toBeInTheDocument();
+    // Wait for the typing animation to complete
+    await waitFor(() => {
+      expect(screen.getByText(testContent)).toBeInTheDocument();
+    }, { timeout: 1000 });
   });
 
   test('should display typing animation with cursor', async () => {
     const testContent = '测试文本';
     render(<StoryText content={testContent} speed="fast" />);
     
-    // 初始状态应该显示空文本
-    const textElement = screen.getByRole('article');
-    expect(textElement).toHaveTextContent('');
+    // 初始状态应该显示空文本 (使用容器元素而不是不存在的article角色)
+    const textElement = screen.getByText('▊').closest('.textContent');
+    expect(textElement).toHaveTextContent('▊'); // 只有光标
     
     // 等待打字动画开始
     await waitFor(() => {
-      expect(textElement.textContent).toContain('测');
+      expect(textElement?.textContent).toContain('测');
     }, { timeout: 100 });
     
     // 验证光标存在

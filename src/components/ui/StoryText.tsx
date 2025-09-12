@@ -35,6 +35,13 @@ export const StoryText: React.FC<StoryTextProps> = React.memo(({
     setCurrentIndex(0);
     setIsComplete(false);
 
+    // 如果内容为空，立即完成
+    if (content.length === 0) {
+      setIsComplete(true);
+      onComplete?.();
+      return;
+    }
+
     // 开始打字机效果
     const typingSpeed = SPEED_MAP[speed];
     
