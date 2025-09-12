@@ -1,0 +1,706 @@
+import { ConditionEvaluator } from '../conditionEvaluator';
+import type { GameState, Condition, WinLevel, DeathReason } from '../../types/game';
+
+// 测试辅助函数
+function createGameState(overrides: Partial<GameState> = {}): GameState {
+  return {
+    attributes: {
+      health: 100,
+      sanity: 100,
+      hunger: 100,
+      intelligence: 50,
+      strength: 50,
+      speed: 50,
+      luck: 50,
+      profession: 'student'
+    },
+    inventory: [],
+    flags: {},
+    day: 1,
+    time: 0,
+    location: 'dormitory',
+    ...overrides
+  };
+}
+
+// 标准测试条件
+const standardConditions: Condition[] = [
+  {
+    id: 'win_s',
+    type: 'win',
+    level: 'S',
+    expression: 'day >= 7 && attributes.health >= 80 && attributes.sanity >= 80 && inventory.includes("golden_key")',
+    priority: 100,
+    description: '完美通关',
+    message: '恭喜！完美通关！'
+  },
+  {
+    id: 'win_a',
+    type: 'win',
+    level: 'A',
+    expression: 'day >= 7 && attributes.health >= 60 && attributes.sanity >= 60',
+    priority: 90,
+    description: '优秀通关',
+    message: '很好！成功通关！'
+  },
+  {
+    id: 'win_b',
+    type: 'win',
+    level: 'B',
+    expression: 'day >= 7',
+    priority: 80,
+    description: '普通通关',
+    message: '你勉强通关了游戏。'
+  },
+  {
+    id: 'win_c',
+    type: 'win',
+    level: 'C',
+    expression: 'day >= 5 && attributes.health > 0',
+    priority: 70,
+    description: '勉强通关',
+    message: '你以最低标准通关了游戏。'
+  },
+  {
+    id: 'death_health',
+    type: 'death',
+    expression: 'attributes.health <= 0',
+    priority: 1000,
+    description: '生命值归零死亡',
+    message: '你的生命走到了尽头...'
+  },
+  {
+    id: 'death_sanity',
+    type: 'death',
+    expression: 'attributes.sanity <= 0',
+    priority: 1000,
+    description: '理智值归零死亡',
+    message: '你的精神崩溃了...'
+  },
+  {
+    id: 'death_hunger',
+    type: 'death',
+    expression: 'attributes.hunger <= 0',
+    priority: 1000,
+    description: '饥饿死亡',
+    message: '你被饿死了...'
+  }
+];
+
+describe('通关等级识别', () => {
+  let evaluator: ConditionEvaluator;
+
+  beforeEach(() => {
+    evaluator = new ConditionEvaluator(standardConditions);
+  });
+
+  test('S级通关条件 - 完美状态', () => {
+    const state = createGameState({
+      day: 7,
+      attributes: { 
+        health: 85, 
+        sanity: 85,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      },
+      inventory: ['golden_key', 'food']
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('S');
+    expect(result.deathReason).toBeUndefined();
+    expect(result.priority).toBe(100);
+  });
+
+  test('A级通关条件 - 良好状态', () => {
+    const state = createGameState({
+      day: 7,
+      attributes: { 
+        health: 70, 
+        sanity: 70,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      },
+      inventory: ['food'] // 没有黄金钥匙
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('A');
+    expect(result.deathReason).toBeUndefined();
+    expect(result.priority).toBe(90);
+  });
+
+  test('B级通关条件 - 基本通关', () => {
+    const state = createGameState({
+      day: 7,
+      attributes: { 
+        health: 30, // 低属性
+        sanity: 30,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('B');
+    expect(result.deathReason).toBeUndefined();
+    expect(result.priority).toBe(80);
+  });
+
+  test('C级通关条件 - 最低标准', () => {
+    const state = createGameState({
+      day: 5, // 只存活5天
+      attributes: { 
+        health: 10, // 低生命值
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('C');
+    expect(result.deathReason).toBeUndefined();
+    expect(result.priority).toBe(70);
+  });
+
+  test('无通关条件 - 未达到任何标准', () => {
+    const state = createGameState({
+      day: 3, // 只存活3天
+      attributes: { 
+        health: 50,
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBeUndefined();
+    expect(result.deathReason).toBeUndefined();
+    expect(result.triggeredConditions).toHaveLength(0);
+  });
+});
+
+describe('死亡条件检测', () => {
+  let evaluator: ConditionEvaluator;
+
+  beforeEach(() => {
+    evaluator = new ConditionEvaluator(standardConditions);
+  });
+
+  test('生命值归零死亡', () => {
+    const state = createGameState({
+      attributes: { 
+        health: 0,
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.deathReason).toBe('health_zero');
+    expect(result.winLevel).toBeUndefined();
+    expect(result.priority).toBe(1000);
+  });
+
+  test('理智值归零死亡', () => {
+    const state = createGameState({
+      attributes: { 
+        health: 50,
+        sanity: 0,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.deathReason).toBe('sanity_zero');
+    expect(result.winLevel).toBeUndefined();
+  });
+
+  test('饥饿死亡', () => {
+    const state = createGameState({
+      attributes: { 
+        health: 50,
+        sanity: 50,
+        hunger: 0,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.deathReason).toBe('hunger_zero');
+    expect(result.winLevel).toBeUndefined();
+  });
+
+  test('死亡条件优先级高于通关条件', () => {
+    const state = createGameState({
+      day: 7,
+      attributes: { 
+        health: 0, // 死亡条件
+        sanity: 85, // 满足A级通关
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.deathReason).toBe('health_zero');
+    expect(result.winLevel).toBeUndefined(); // 即使有通关条件也不触发
+    expect(result.priority).toBe(1000); // 死亡条件优先级
+  });
+});
+
+describe('条件优先级处理', () => {
+  test('高优先级条件优先生效', () => {
+    const conditions: Condition[] = [
+      {
+        id: 'low_priority',
+        type: 'win',
+        level: 'C',
+        expression: 'day >= 5',
+        priority: 50,
+        description: '低优先级',
+        message: '低优先级消息'
+      },
+      {
+        id: 'high_priority',
+        type: 'win',
+        level: 'A',
+        expression: 'day >= 5',
+        priority: 90,
+        description: '高优先级',
+        message: '高优先级消息'
+      }
+    ];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({ day: 5 });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('A'); // 高优先级生效
+    expect(result.priority).toBe(90);
+  });
+
+  test('相同优先级条件按顺序处理', () => {
+    const conditions: Condition[] = [
+      {
+        id: 'first',
+        type: 'win',
+        level: 'B',
+        expression: 'day >= 5',
+        priority: 80,
+        description: '第一个',
+        message: '第一个消息'
+      },
+      {
+        id: 'second',
+        type: 'win',
+        level: 'A',
+        expression: 'day >= 5',
+        priority: 80,
+        description: '第二个',
+        message: '第二个消息'
+      }
+    ];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({ day: 5 });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('B'); // 第一个匹配的生效
+    expect(result.priority).toBe(80);
+  });
+});
+
+describe('复杂条件表达式', () => {
+  test('逻辑与表达式', () => {
+    const conditions: Condition[] = [{
+      id: 'and_test',
+      type: 'win',
+      level: 'S',
+      expression: 'day >= 7 && attributes.health >= 80 && attributes.sanity >= 80',
+      priority: 100,
+      description: '与条件测试',
+      message: '满足所有条件'
+    }];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({
+      day: 7,
+      attributes: { 
+        health: 80, 
+        sanity: 80,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('S');
+  });
+
+  test('逻辑或表达式', () => {
+    const conditions: Condition[] = [{
+      id: 'or_test',
+      type: 'win',
+      level: 'A',
+      expression: 'attributes.health > 90 || attributes.sanity > 90',
+      priority: 90,
+      description: '或条件测试',
+      message: '满足一个条件即可'
+    }];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    
+    // 只满足一个条件
+    const state1 = createGameState({
+      attributes: { 
+        health: 95, 
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    const result1 = evaluator.evaluateConditions(state1);
+    expect(result1.winLevel).toBe('A');
+    
+    // 满足两个条件
+    const state2 = createGameState({
+      attributes: { 
+        health: 95, 
+        sanity: 95,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    const result2 = evaluator.evaluateConditions(state2);
+    expect(result2.winLevel).toBe('A');
+  });
+
+  test('库存检查表达式', () => {
+    const conditions: Condition[] = [{
+      id: 'inventory_test',
+      type: 'win',
+      level: 'A',
+      expression: 'inventory.includes("golden_key") && inventory.includes("silver_key")',
+      priority: 90,
+      description: '库存检查测试',
+      message: '收集了两把钥匙'
+    }];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({
+      inventory: ['golden_key', 'silver_key', 'food']
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    expect(result.winLevel).toBe('A');
+  });
+
+  test('标记检查表达式', () => {
+    const conditions: Condition[] = [{
+      id: 'flag_test',
+      type: 'win',
+      level: 'B',
+      expression: 'flags.rule1_obeyed && !flags.rule2_broken',
+      priority: 80,
+      description: '标记检查测试',
+      message: '遵守了规则1且没有违反规则2'
+    }];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({
+      flags: { rule1_obeyed: true, rule2_broken: false }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    expect(result.winLevel).toBe('B');
+  });
+
+  test('数值比较表达式', () => {
+    const conditions: Condition[] = [{
+      id: 'comparison_test',
+      type: 'win',
+      level: 'A',
+      expression: 'attributes.health >= 70 && attributes.sanity > 60 && attributes.intelligence < 90',
+      priority: 90,
+      description: '数值比较测试',
+      message: '属性在指定范围内'
+    }];
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({
+      attributes: { 
+        health: 75, 
+        sanity: 70, 
+        intelligence: 80,
+        hunger: 60,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    expect(result.winLevel).toBe('A');
+  });
+});
+
+describe('表达式验证', () => {
+  test('有效表达式验证', () => {
+    const result = ConditionEvaluator.validateConditionExpression('attributes.health > 50');
+    
+    expect(result.valid).toBe(true);
+    expect(result.error).toBeUndefined();
+  });
+
+  test('语法错误表达式', () => {
+    const result = ConditionEvaluator.validateConditionExpression('attributes.health >=');
+    
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+
+  test('不平衡括号', () => {
+    const result = ConditionEvaluator.validateConditionExpression('(attributes.health > 50 && attributes.sanity < 30');
+    
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Unbalanced parentheses');
+  });
+
+  test('不安全的表达式被拒绝', () => {
+    const evaluator = new ConditionEvaluator([{
+      id: 'unsafe_test',
+      type: 'win',
+      level: 'A',
+      expression: 'process.exit(1)',
+      priority: 90,
+      description: '不安全表达式测试',
+      message: '不应该执行'
+    }]);
+    
+    const state = createGameState();
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBeUndefined(); // 不应该触发
+  });
+});
+
+describe('缓存机制', () => {
+  let evaluator: ConditionEvaluator;
+
+  beforeEach(() => {
+    evaluator = new ConditionEvaluator(standardConditions);
+  });
+
+  test('缓存命中提升性能', () => {
+    const state = createGameState({ day: 7 });
+    
+    // 第一次评估（无缓存）
+    const start1 = performance.now();
+    evaluator.evaluateConditions(state);
+    const time1 = performance.now() - start1;
+    
+    // 第二次评估（有缓存）
+    const start2 = performance.now();
+    evaluator.evaluateConditions(state);
+    const time2 = performance.now() - start2;
+    
+    expect(time2).toBeLessThan(time1 * 0.5); // 缓存应该显著提升性能
+  });
+
+  test('缓存清除功能', () => {
+    const state = createGameState();
+    
+    evaluator.evaluateConditions(state);
+    const stats1 = evaluator.getStats();
+    expect(stats1.cacheSize).toBeGreaterThan(0);
+    
+    evaluator.clearCache();
+    const stats2 = evaluator.getStats();
+    expect(stats2.cacheSize).toBe(0);
+  });
+});
+
+describe('边界条件处理', () => {
+  let evaluator: ConditionEvaluator;
+
+  beforeEach(() => {
+    evaluator = new ConditionEvaluator(standardConditions);
+  });
+
+  test('精确边界值测试', () => {
+    const state = createGameState({
+      attributes: { 
+        health: 0, // 精确边界
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.deathReason).toBe('health_zero');
+  });
+
+  test('负数值处理', () => {
+    const state = createGameState({
+      attributes: { 
+        health: -10, // 负数值
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const result = evaluator.evaluateConditions(state);
+    
+    expect(result.deathReason).toBe('health_zero'); // 仍然触发死亡条件
+  });
+
+  test('空库存检查', () => {
+    const conditions: Condition[] = [{
+      id: 'empty_inventory',
+      type: 'win',
+      level: 'A',
+      expression: 'inventory.length === 0',
+      priority: 90,
+      description: '空库存测试',
+      message: '库存为空'
+    }];
+    
+    const customEvaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({ inventory: [] });
+    
+    const result = customEvaluator.evaluateConditions(state);
+    
+    expect(result.winLevel).toBe('A');
+  });
+});
+
+describe('性能测试', () => {
+  test('条件评估响应时间 < 50ms', () => {
+    const evaluator = new ConditionEvaluator(standardConditions);
+    const state = createGameState();
+    
+    const startTime = performance.now();
+    const result = evaluator.evaluateConditions(state);
+    const endTime = performance.now();
+    
+    const responseTime = endTime - startTime;
+    
+    expect(responseTime).toBeLessThan(50);
+    console.log(`响应时间: ${responseTime}ms`);
+  });
+
+  test('大量条件处理性能', () => {
+    // 生成100个条件进行测试
+    const conditions = Array.from({ length: 100 }, (_, i) => ({
+      id: `test_${i}`,
+      type: 'win' as const,
+      level: 'A' as WinLevel,
+      expression: `attributes.health > ${i}`,
+      priority: i,
+      description: `测试条件${i}`,
+      message: `消息${i}`
+    }));
+    
+    const evaluator = new ConditionEvaluator(conditions);
+    const state = createGameState({
+      attributes: { 
+        health: 50,
+        sanity: 50,
+        hunger: 60,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        profession: 'student'
+      }
+    });
+    
+    const startTime = performance.now();
+    for (let i = 0; i < 10; i++) {
+      evaluator.evaluateConditions(state);
+    }
+    const endTime = performance.now();
+    
+    const avgTime = (endTime - startTime) / 10;
+    
+    expect(avgTime).toBeLessThan(10);
+    console.log(`平均评估时间: ${avgTime}ms`);
+  });
+});

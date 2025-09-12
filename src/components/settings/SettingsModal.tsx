@@ -18,7 +18,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   // 所有Hook必须在组件顶层，在任何条件语句之前
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'speed' | 'test1' | 'test2'>('speed');
-  const [testInput, setTestInput] = useState('');
+  // const [testInput, setTestInput] = useState(''); // 暂时未使用
   const [test1Input, setTest1Input] = useState('');
   const [test2Input, setTest2Input] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -226,17 +226,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       fileInputRef.current?.click();
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result as string;
-          setTest1Input(content);
-        };
-        reader.readAsText(file);
-      }
-    };
+    // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //   const file = event.target.files?.[0];
+    //   if (file) {
+    //     const reader = new FileReader();
+    //     reader.onload = (e) => {
+    //       const content = e.target?.result as string;
+    //       setTest1Input(content);
+    //     };
+    //     reader.readAsText(file);
+    //   }
+    // };
 
     return (
       <div className="test-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -476,7 +476,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         const startNode = startNodeMatch ? startNodeMatch[1] : 'N1';
         
         // 从主数据块中提取节点
-        const nodes = {};
+        const nodes: { [key: string]: string } = {};
         const nodesSection = extractSection(mainDataBlock, 'nodes');
         if (nodesSection) {
           const nodePattern = /"(\w+)":\s*\{[^}]*"content":\s*"([^"]*)"[^}]*\}/g;
@@ -533,7 +533,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
     
     // 辅助函数：使用大括号匹配提取章节
-    function extractSection(data, sectionName) {
+    function extractSection(data: string, sectionName: string): string | null {
       const sectionStart = data.indexOf(`"${sectionName}": {`);
       if (sectionStart === -1) return null;
       
@@ -603,17 +603,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       fileInputRef.current?.click();
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result as string;
-          setTest2Input(content);
-        };
-        reader.readAsText(file);
-      }
-    };
+    // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //   const file = event.target.files?.[0];
+    //   if (file) {
+    //     const reader = new FileReader();
+    //     reader.onload = (e) => {
+    //       const content = e.target?.result as string;
+    //       setTest2Input(content);
+    //     };
+    //     reader.readAsText(file);
+    //   }
+    // };
 
     return (
       <div className="test-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

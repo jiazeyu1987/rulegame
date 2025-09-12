@@ -1,0 +1,348 @@
+.chinaMap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.mapSvg {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.provincePath {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.provincePath:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+  transform-origin: center;
+}
+
+.provincePath:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.provinceLabel {
+  pointer-events: none;
+  user-select: none;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.dataLabel {
+  pointer-events: none;
+  user-select: none;
+  font-family: 'Courier New', monospace;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.mapTitle {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+.tooltipContent {
+  white-space: nowrap;
+}
+
+.legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.legendTitle {
+  font-size: 14px;
+  font-weight: bold;
+  color: #374151;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.legendGradient {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendColor {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.legendValue {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+}
+
+.selectedInfo {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  background: rgba(59, 130, 246, 0.95);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(10px);
+  max-width: 200px;
+}
+
+.selectedTitle {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+}
+
+.selectedData {
+  font-size: 14px;
+  margin: 0 0 4px 0;
+  opacity: 0.9;
+}
+
+.selectedHint {
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* 尺寸变体 */
+.small {
+  min-height: 300px;
+}
+
+.small .mapSvg {
+  min-height: 250px;
+}
+
+.small .provinceLabel {
+  font-size: 10px;
+}
+
+.small .dataLabel {
+  font-size: 8px;
+}
+
+.small .legend {
+  padding: 12px;
+  bottom: 10px;
+  right: 10px;
+}
+
+.small .legendTitle {
+  font-size: 12px;
+}
+
+.small .legendColor {
+  width: 12px;
+  height: 12px;
+}
+
+.small .legendValue {
+  font-size: 10px;
+}
+
+.small .selectedInfo {
+  padding: 8px 12px;
+  top: 50px;
+  left: 10px;
+}
+
+.small .selectedTitle {
+  font-size: 14px;
+}
+
+.small .selectedData {
+  font-size: 12px;
+}
+
+.small .selectedHint {
+  font-size: 10px;
+}
+
+.large {
+  min-height: 600px;
+}
+
+.large .mapSvg {
+  min-height: 500px;
+}
+
+.large .provinceLabel {
+  font-size: 14px;
+}
+
+.large .dataLabel {
+  font-size: 11px;
+}
+
+.large .legend {
+  padding: 20px;
+  bottom: 30px;
+  right: 30px;
+}
+
+.large .legendTitle {
+  font-size: 16px;
+}
+
+.large .legendColor {
+  width: 20px;
+  height: 20px;
+}
+
+.large .legendValue {
+  font-size: 14px;
+}
+
+.large .selectedInfo {
+  padding: 16px 20px;
+  top: 80px;
+  left: 30px;
+}
+
+.large .selectedTitle {
+  font-size: 18px;
+}
+
+.large .selectedData {
+  font-size: 16px;
+}
+
+.large .selectedHint {
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .chinaMap {
+    border-radius: 8px;
+  }
+  
+  .mapContainer {
+    min-height: 350px;
+  }
+  
+  .legend {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    margin: 10px;
+    backdrop-filter: none;
+  }
+  
+  .selectedInfo {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin: 10px;
+    backdrop-filter: none;
+  }
+  
+  .tooltip {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mapContainer {
+    min-height: 300px;
+  }
+  
+  .legend {
+    padding: 12px;
+    margin: 8px;
+  }
+  
+  .selectedInfo {
+    padding: 10px 12px;
+    margin: 8px;
+  }
+  
+  .provinceLabel {
+    font-size: 9px;
+  }
+  
+  .dataLabel {
+    font-size: 7px;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .provincePath {
+    stroke-width: 2;
+  }
+  
+  .provinceLabel {
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 1);
+  }
+}
+
+/* 减少动画偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  .provincePath {
+    transition: none;
+  }
+  
+  .provincePath:hover {
+    transform: none;
+    filter: none;
+  }
+}

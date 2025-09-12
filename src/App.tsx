@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { GameState, RulePaper, ClearRule, Passage, Choice } from './types/game';
+import type { GameState, RulePaper, ClearRule, Passage, Choice, Connection } from './types/game'
 import GameHeader from './components/game/GameHeader';
 import RulePaperComponent from './components/rules/RulePaper';
 import RuleNavigation from './components/rules/RuleNavigation';
@@ -623,7 +623,7 @@ const GameApp: React.FC = () => {
       const startNode = startNodeMatch ? startNodeMatch[1] : 'N1';
       
       // 从主数据块中提取节点
-      const nodes = {};
+      const nodes: { [key: string]: string } = {};
       const nodesSection = extractSection(mainDataBlock, 'nodes');
       if (nodesSection) {
         const nodePattern = /"(\w+)":\s*\{[^}]*"content":\s*"([^"]*)"[^}]*\}/g;
@@ -680,7 +680,7 @@ const GameApp: React.FC = () => {
   }
   
   // 辅助函数：使用大括号匹配提取章节
-  function extractSection(data, sectionName) {
+  function extractSection(data: string, sectionName: string): string | null {
     const sectionStart = data.indexOf(`"${sectionName}": {`);
     if (sectionStart === -1) return null;
     
@@ -732,7 +732,7 @@ const GameApp: React.FC = () => {
   }
   
   // 根据解析结果更新游戏段落数据
-  const updatePassagesFromMapping = (mapping: {nodes: Record<string, string>, connections: Array<{from: string, to: string, condition: string}>}) => {
+  const updatePassagesFromMapping = (mapping: {nodes: Record<string, string>, connections: Connection[]}) => {
     console.log('=== UPDATE PASSAGES DEBUG ===');
     console.log('Mapping nodes:', mapping.nodes);
     console.log('Mapping connections:', mapping.connections);
@@ -774,13 +774,13 @@ const GameApp: React.FC = () => {
           choices.push({
             text: conn.condition,
             action: conn.to, // 使用目标节点ID作为action
-            timeChange: (conn as any).timeChange || 0, // 从连接中获取时间变化，默认为0
-            hungerChange: (conn as any).hungerChange || 0, // 饱食度变化
-            energyChange: (conn as any).energyChange || 0, // 体力变化
-            sanityChange: (conn as any).sanityChange || 0, // 理智值变化
-            strengthChange: (conn as any).strengthChange || 0, // 力量变化
-            speedChange: (conn as any).speedChange || 0, // 速度变化
-            luckChange: (conn as any).luckChange || 0 // 运气变化
+            timeChange: conn.timeChange || 0, // 从连接中获取时间变化，默认为0
+            hungerChange: conn.hungerChange || 0, // 饱食度变化
+            energyChange: conn.energyChange || 0, // 体力变化
+            sanityChange: conn.sanityChange || 0, // 理智值变化
+            strengthChange: conn.strengthChange || 0, // 力量变化
+            speedChange: conn.speedChange || 0, // 速度变化
+            luckChange: conn.luckChange || 0 // 运气变化
           });
         }
       }

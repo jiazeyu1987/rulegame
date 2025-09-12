@@ -1,0 +1,235 @@
+.progressIndicator {
+  width: 100%;
+  padding: 1rem;
+}
+
+/* 线性进度条样式 */
+.linearContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.progressText {
+  font-weight: 500;
+}
+
+.currentDayText {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* 日历样式 */
+.calendarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.calendarGrid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.calendarGrid.small {
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+}
+
+.calendarGrid.medium {
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+}
+
+.calendarGrid.large {
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+}
+
+.dayCell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 60px;
+}
+
+.dayCell:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.dayCell:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.dayCell:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 状态样式 */
+.completed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-color: #10b981;
+}
+
+.current {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-color: #3b82f6;
+  animation: pulse 2s infinite;
+}
+
+.available {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border-color: #f59e0b;
+}
+
+.locked {
+  background: #e5e7eb;
+  color: #9ca3af;
+  border-color: #d1d5db;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.dayNumber {
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.dayLabel {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  opacity: 0.9;
+}
+
+.checkMark {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.75rem;
+  color: inherit;
+}
+
+.currentIndicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.5rem;
+  color: inherit;
+  animation: pulse 1.5s infinite;
+}
+
+/* 图例 */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .calendarGrid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  .dayCell {
+    min-height: 50px;
+    padding: 0.375rem;
+  }
+  
+  .dayNumber {
+    font-size: 1rem;
+  }
+  
+  .dayLabel {
+    font-size: 0.625rem;
+  }
+  
+  .legend {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendarGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}

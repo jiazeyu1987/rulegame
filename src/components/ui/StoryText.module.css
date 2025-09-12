@@ -1,0 +1,56 @@
+.storyText {
+  position: relative;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  color: #e94560;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  min-height: 120px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.textContent {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.cursor {
+  display: inline-block;
+  animation: blink 1s infinite;
+  color: #e94560;
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.skipButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(233, 69, 96, 0.2);
+  border: 1px solid #e94560;
+  color: #e94560;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.skipButton:hover {
+  background: rgba(233, 69, 96, 0.4);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .storyText {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
