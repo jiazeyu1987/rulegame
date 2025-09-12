@@ -2,20 +2,18 @@ import { ConditionEvaluator } from '../../src/utils/conditionEvaluator';
 
 // 简单测试表达式处理
 const testGameState = {
-  attributes: {
-    health: 85,
-    hunger: 80,
-    sanity: 85,
-    intelligence: 70,
-    strength: 60,
-    speed: 75,
-    luck: 50,
-    profession: '学生'
-  },
+  profession: '学生',
+  hunger: 80,
+  energy: 85,
+  sanity: 85,
+  intelligence: 70,
+  strength: 60,
+  speed: 75,
+  luck: 50,
+  time: 22,
   inventory: ['golden_key', 'food'],
   flags: { rule1_broken: false, rule2_followed: true },
   day: 1,
-  time: 100,
   location: 'dormitory'
 };
 

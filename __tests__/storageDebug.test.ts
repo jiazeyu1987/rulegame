@@ -1,6 +1,6 @@
 import { StorageManager } from '../src/utils/storageManager';
-import { GameSaveData } from '../src/types/storage';
-import { Profession } from '../src/types/game';
+import type { GameSaveData } from '../src/types/storage';
+import type { Profession } from '../src/types/game';
 
 describe('StorageManager - 调试测试', () => {
   let storageManager: StorageManager;
@@ -20,22 +20,20 @@ describe('StorageManager - 调试测试', () => {
       playerName: 'TestPlayer',
       profession: '学生',
       gameState: {
-        attributes: {
-          health: 100,
-          sanity: 100,
-          hunger: 50,
-          intelligence: 50,
-          strength: 50,
-          speed: 50,
-          luck: 50,
-          profession: '学生'
-        },
-        inventory: [],
-        flags: {},
-        day: 1,
-        time: 0,
-        location: 'dormitory'
-      },
+      profession: '学生' as Profession,
+      hunger: 50,
+      energy: 100,
+      sanity: 100,
+      intelligence: 50,
+      strength: 50,
+      speed: 50,
+      luck: 50,
+      time: 22,
+      inventory: [],
+      flags: {},
+      day: 1,
+      location: 'dormitory'
+    },
       currentDay: 1,
       currentNode: 'start',
       lastSaveTime: Date.now(),
@@ -86,23 +84,20 @@ describe('StorageManager - 调试测试', () => {
       }
       
       // 检查属性对象
-      if ('attributes' in gameState) {
-        const attributes = gameState.attributes;
-        const requiredStats = [
-          'health', 'sanity', 'hunger', 'intelligence', 'strength', 'speed', 'luck', 'profession'
-        ];
-        
-        for (const stat of requiredStats) {
-          console.log(`属性字段 ${stat}:`, stat in attributes, typeof (attributes as any)[stat]);
-          if (!(stat in attributes)) {
-            console.log(`属性验证失败: ${stat}`);
-          }
+      const requiredStats = [
+        'profession', 'hunger', 'energy', 'sanity', 'intelligence', 'strength', 'speed', 'luck'
+      ];
+      
+      for (const stat of requiredStats) {
+        console.log(`属性字段 ${stat}:`, stat in gameState, typeof (gameState as any)[stat]);
+        if (!(stat in gameState)) {
+          console.log(`属性验证失败: ${stat}`);
         }
-        
-        // 检查数值范围
-        console.log('饥饿值范围:', attributes.hunger, attributes.hunger < 0 || attributes.hunger > 100);
-        console.log('理智值范围:', attributes.sanity, attributes.sanity < 0 || attributes.sanity > 100);
       }
+      
+      // 检查数值范围
+      console.log('饥饿值范围:', gameState.hunger, gameState.hunger < 0 || gameState.hunger > 100);
+      console.log('理智值范围:', gameState.sanity, gameState.sanity < 0 || gameState.sanity > 100);
     }
     
     const result = storageManager.validate(testData);
@@ -117,6 +112,19 @@ describe('StorageManager - 调试测试', () => {
       playerName: 'Test',
       profession: '学生' as Profession,
       gameState: {
+        time: 22,
+        profession: '学生' as Profession,
+        hunger: 50,
+        energy: 100,
+        sanity: 100,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        inventory: [],
+        flags: {},
+        day: 1,
+        location: 'dormitory',
         attributes: {
           health: 100,
           sanity: 100,
@@ -126,12 +134,7 @@ describe('StorageManager - 调试测试', () => {
           speed: 50,
           luck: 50,
           profession: '学生' as Profession
-        },
-        inventory: [],
-        flags: {},
-        day: 1,
-        time: 0,
-        location: 'dormitory'
+        }
       },
       rulePapers: [],
       clearRules: [],

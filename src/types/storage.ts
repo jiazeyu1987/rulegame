@@ -1,4 +1,4 @@
-import { GameState, Profession, RulePaper, ClearRule } from './game';
+import type { GameState, Profession, RulePaper, ClearRule } from './game';
 
 // 存档版本号，用于兼容性处理
 export const SAVE_VERSION = '1.0.0';

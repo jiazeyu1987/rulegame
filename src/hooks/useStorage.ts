@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StorageManager } from '../utils/storageManager';
-import { GameSaveData } from '../types/storage';
+import type { GameSaveData } from '../types/storage';
 
 export interface UseStorageReturn {
   save: (data: GameSaveData) => Promise<boolean>;

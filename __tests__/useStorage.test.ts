@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useStorage } from '../src/hooks/useStorage';
-import { Profession } from '../src/types/game';
+import type { Profession } from '../src/types/game';
 
 describe('useStorage Hook', () => {
   beforeEach(() => {
@@ -29,6 +29,19 @@ describe('useStorage Hook', () => {
       playerName: 'TestPlayer',
       profession: '学生' as Profession,
       gameState: {
+        time: 22,
+        profession: '学生' as Profession,
+        hunger: 50,
+        energy: 100,
+        sanity: 100,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        inventory: [],
+        flags: {},
+        day: 1,
+        location: 'dormitory',
         attributes: {
           health: 100,
           sanity: 100,
@@ -38,12 +51,7 @@ describe('useStorage Hook', () => {
           speed: 50,
           luck: 50,
           profession: '学生' as Profession
-        },
-        inventory: [],
-        flags: {},
-        day: 1,
-        time: 0,
-        location: 'dormitory'
+        }
       },
       rulePapers: [],
       clearRules: [],
@@ -72,6 +80,19 @@ describe('useStorage Hook', () => {
       playerName: 'TestPlayer',
       profession: '学生' as Profession,
       gameState: {
+        time: 22,
+        profession: '学生' as Profession,
+        hunger: 50,
+        energy: 100,
+        sanity: 100,
+        intelligence: 50,
+        strength: 50,
+        speed: 50,
+        luck: 50,
+        inventory: [],
+        flags: {},
+        day: 1,
+        location: 'dormitory',
         attributes: {
           health: 100,
           sanity: 100,
@@ -81,12 +102,7 @@ describe('useStorage Hook', () => {
           speed: 50,
           luck: 50,
           profession: '学生' as Profession
-        },
-        inventory: [],
-        flags: {},
-        day: 1,
-        time: 0,
-        location: 'dormitory'
+        }
       },
       rulePapers: [],
       clearRules: [],

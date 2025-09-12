@@ -4,24 +4,21 @@ import type { GameState, Condition, WinLevel, DeathReason } from '../../types/ga
 // 测试辅助函数
 function createGameState(overrides: Partial<GameState> = {}): GameState {
   return {
-    attributes: {
-      health: 100,
-      sanity: 100,
-      hunger: 100,
-      intelligence: 50,
-      strength: 50,
-      speed: 50,
-      luck: 50,
-      profession: 'student'
-    },
+    profession: 'student',
+    hunger: 100,
+    energy: 100,
+    sanity: 100,
+    intelligence: 50,
+    strength: 50,
+    speed: 50,
+    luck: 50,
+    time: 22,
     inventory: [],
     flags: {},
     day: 1,
-    time: 0,
     location: 'dormitory',
     ...overrides
   };
-}
 
 // 标准测试条件
 const standardConditions: Condition[] = [
@@ -672,7 +669,7 @@ describe('性能测试', () => {
       id: `test_${i}`,
       type: 'win' as const,
       level: 'A' as WinLevel,
-      expression: `attributes.health > ${i}`,
+      expression: `energy > ${i}`,
       priority: i,
       description: `测试条件${i}`,
       message: `消息${i}`
@@ -680,16 +677,14 @@ describe('性能测试', () => {
     
     const evaluator = new ConditionEvaluator(conditions);
     const state = createGameState({
-      attributes: { 
-        health: 50,
-        sanity: 50,
-        hunger: 60,
-        intelligence: 50,
-        strength: 50,
-        speed: 50,
-        luck: 50,
-        profession: 'student'
-      }
+      profession: 'student',
+      hunger: 60,
+      energy: 50,
+      sanity: 50,
+      intelligence: 50,
+      strength: 50,
+      speed: 50,
+      luck: 50
     });
     
     const startTime = performance.now();

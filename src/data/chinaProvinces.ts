@@ -1,4 +1,4 @@
-import { ProvinceData } from '../types/map';
+import type { ProvinceData } from '../types/map';
 
 export const CHINA_PROVINCES = [
   {

@@ -160,44 +160,41 @@ export class ConditionEvaluator {
       console.log(`Original expression: ${expr}`);
     }
     
-    // 首先处理直接属性访问: sanity -> attributes.sanity
-    // 修复：确保不匹配已经带有attributes.前缀的属性
-    const directAttrPatterns = ['health', 'hunger', 'sanity', 'intelligence', 'strength', 'speed', 'luck', 'profession'];
+    // 首先处理直接属性访问: sanity -> 85 (with health->energy mapping)
+    const directAttrPatterns = ['sanity', 'hunger', 'intelligence', 'strength', 'speed', 'luck', 'profession'];
+    const healthMappedPatterns = ['health'];
+    
     directAttrPatterns.forEach(attr => {
-      // 使用负向前瞻确保不匹配attributes.health中的health
-      const regex = new RegExp(`(?<!attributes\\.)\\b${attr}\\b`, 'g');
-      processedExpr = processedExpr.replace(regex, `attributes.${attr}`);
+      const regex = new RegExp(`\\b${attr}\\b`, 'g');
+      processedExpr = processedExpr.replace(regex, String((state as any)[attr]));
+    });
+    
+    healthMappedPatterns.forEach(attr => {
+      const regex = new RegExp(`\\b${attr}\\b`, 'g');
+      processedExpr = processedExpr.replace(regex, String(state.energy));
     });
     
     if (this.debugMode || process.env.NODE_ENV === 'development') {
       console.log(`After direct attribute replacement: ${processedExpr}`);
     }
     
-    // 替换属性访问: attributes.health -> 85
-    processedExpr = processedExpr.replace(/attributes\.(\w+)/g, (match, attr) => {
-      const value = (state.attributes as any)[attr];
-      const result = value !== undefined ? String(value) : '0';
-      if (this.debugMode || process.env.NODE_ENV === 'development') {
-        console.log(`Replacing ${match} with ${result} (attr: ${attr}, value: ${value})`);
-      }
-      return result;
-    });
+    // 属性访问已经通过直接替换处理，这里不需要额外的attributes替换
     
     if (this.debugMode || process.env.NODE_ENV === 'development') {
       console.log(`After attribute value replacement: ${processedExpr}`);
     }
     
     // 替换库存长度: inventory.length -> 3
-    processedExpr = processedExpr.replace(/inventory\.length/g, String(state.inventory.length));
+    processedExpr = processedExpr.replace(/inventory\.length/g, String(state.inventory?.length || 0));
     
     // 替换库存包含检查: inventory.includes("item") -> true/false
     processedExpr = processedExpr.replace(/inventory\.includes\(['"](.+?)['"]\)/g, (match, item) => {
-      return String(state.inventory.includes(item));
+      return String(state.inventory?.includes(item) || false);
     });
     
     // 替换标记访问: flags.xxx -> true/false
     processedExpr = processedExpr.replace(/flags\.(\w+)/g, (match, flag) => {
-      return String(state.flags[flag] || false);
+      return String(state.flags?.[flag] || false);
     });
     
     // 替换基本状态
@@ -310,7 +307,7 @@ export class ConditionEvaluator {
    * 解析死亡原因
    */
   private parseDeathReason(expr: string): DeathReason {
-    if (expr.includes('health')) return 'health_zero';
+    if (expr.includes('energy')) return 'health_zero';
     if (expr.includes('sanity')) return 'sanity_zero';
     if (expr.includes('hunger')) return 'hunger_zero';
     if (expr.includes('rule')) return 'rule_violation';
@@ -322,11 +319,18 @@ export class ConditionEvaluator {
    */
   private generateCacheKey(state: GameState): string {
     return JSON.stringify({
-      attributes: state.attributes,
+      profession: state.profession,
+      hunger: state.hunger,
+      energy: state.energy,
+      sanity: state.sanity,
+      intelligence: state.intelligence,
+      strength: state.strength,
+      speed: state.speed,
+      luck: state.luck,
+      time: state.time,
       inventory: state.inventory,
       flags: state.flags,
       day: state.day,
-      time: state.time,
       location: state.location
     });
   }
@@ -365,7 +369,7 @@ export function createStandardConditionEvaluator(): ConditionEvaluator {
       id: 'win_s',
       type: 'win',
       level: 'S',
-      expression: 'day >= 7 && attributes.health >= 80 && attributes.sanity >= 80 && inventory.includes("golden_key")',
+      expression: 'day >= 7 && energy >= 80 && sanity >= 80 && inventory.includes("golden_key")',
       priority: 100,
       description: '完美通关：存活7天且保持高属性并获得黄金钥匙',
       message: '恭喜！你以完美的表现通关了游戏！'
@@ -374,7 +378,7 @@ export function createStandardConditionEvaluator(): ConditionEvaluator {
       id: 'win_a',
       type: 'win',
       level: 'A',
-      expression: 'day >= 7 && attributes.health >= 60 && attributes.sanity >= 60',
+      expression: 'day >= 7 && energy >= 60 && sanity >= 60',
       priority: 90,
       description: '优秀通关：存活7天且保持良好状态',
       message: '很好！你成功通关了游戏！'
@@ -392,7 +396,7 @@ export function createStandardConditionEvaluator(): ConditionEvaluator {
       id: 'win_c',
       type: 'win',
       level: 'C',
-      expression: 'day >= 5 && attributes.health > 0',
+      expression: 'day >= 5 && energy > 0',
       priority: 70,
       description: '勉强通关：存活5天',
       message: '你以最低标准通关了游戏。'
@@ -400,7 +404,7 @@ export function createStandardConditionEvaluator(): ConditionEvaluator {
     {
       id: 'death_health',
       type: 'death',
-      expression: 'attributes.health <= 0',
+      expression: 'energy <= 0',
       priority: 1000,
       description: '生命值归零死亡',
       message: '你的生命走到了尽头...'
@@ -408,7 +412,7 @@ export function createStandardConditionEvaluator(): ConditionEvaluator {
     {
       id: 'death_sanity',
       type: 'death',
-      expression: 'attributes.sanity <= 0',
+      expression: 'sanity <= 0',
       priority: 1000,
       description: '理智值归零死亡',
       message: '你的精神崩溃了...'
@@ -416,7 +420,7 @@ export function createStandardConditionEvaluator(): ConditionEvaluator {
     {
       id: 'death_hunger',
       type: 'death',
-      expression: 'attributes.hunger <= 0',
+      expression: 'hunger <= 0',
       priority: 1000,
       description: '饥饿死亡',
       message: '你被饿死了...'

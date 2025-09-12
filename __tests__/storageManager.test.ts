@@ -1,6 +1,6 @@
 import { StorageManager } from '../src/utils/storageManager';
-import { GameSaveData } from '../src/types/storage';
-import { Profession } from '../src/types/game';
+import type { GameSaveData } from '../src/types/storage';
+import type { Profession } from '../src/types/game';
 
 describe('StorageManager', () => {
   let storageManager: StorageManager;
@@ -22,20 +22,18 @@ describe('StorageManager', () => {
         playerName: 'TestPlayer',
         profession: '学生' as Profession,
         gameState: {
-          attributes: {
-            health: 100,
-            hunger: 50,
-            sanity: 100,
-            intelligence: 50,
-            strength: 50,
-            speed: 50,
-            luck: 50,
-            profession: '学生' as Profession
-          },
+          profession: '学生' as Profession,
+          hunger: 50,
+          energy: 100,
+          sanity: 100,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          time: 22,
           inventory: [],
           flags: {},
           day: 1,
-          time: 0,
           location: 'dormitory'
         },
         rulePapers: [],
@@ -61,20 +59,18 @@ describe('StorageManager', () => {
           playerName: 'TestPlayer',
           profession: '学生' as Profession,
           gameState: {
-            attributes: {
-              health: 100,
-              hunger: 50,
-              sanity: 100,
-              intelligence: 50,
-              strength: 50,
-              speed: 50,
-              luck: 50,
-              profession: '学生' as Profession
-            },
+            profession: '学生' as Profession,
+            hunger: 50,
+            energy: 100,
+            sanity: 100,
+            intelligence: 50,
+            strength: 50,
+            speed: 50,
+            luck: 50,
+            time: 22,
             inventory: [],
             flags: {},
             day: i + 1,
-            time: 0,
             location: 'dormitory'
           },
           rulePapers: [],
@@ -101,20 +97,18 @@ describe('StorageManager', () => {
         playerName: 'TestPlayer',
         profession: '学生' as Profession,
         gameState: {
-          attributes: {
-            health: 100,
-            hunger: 50,
-            sanity: 100,
-            intelligence: 50,
-            strength: 50,
-            speed: 50,
-            luck: 50,
-            profession: '学生' as Profession
-          },
+          profession: '学生' as Profession,
+          hunger: 50,
+          energy: 100,
+          sanity: 100,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          time: 22,
           inventory: [],
           flags: {},
           day: 1,
-          time: 0,
           location: 'dormitory'
         },
         rulePapers: [],
@@ -148,20 +142,18 @@ describe('StorageManager', () => {
         playerName: 'TestPlayer',
         profession: '学生' as Profession,
         gameState: {
-          attributes: {
-            health: 100,
-            hunger: 50,
-            sanity: 100,
-            intelligence: 50,
-            strength: 50,
-            speed: 50,
-            luck: 50,
-            profession: '学生' as Profession
-          },
+          profession: '学生' as Profession,
+          hunger: 50,
+          energy: 100,
+          sanity: 100,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          time: 22,
           inventory: [],
           flags: {},
           day: 1,
-          time: 0,
           location: 'dormitory'
         },
         currentDay: 1,
@@ -196,20 +188,18 @@ describe('StorageManager', () => {
         playerName: 'TestPlayer',
         profession: '学生' as Profession,
         gameState: {
-          attributes: {
-            health: 100,
-            hunger: 50,
-            sanity: 100,
-            intelligence: 50,
-            strength: 50,
-            speed: 50,
-            luck: 50,
-            profession: '学生' as Profession
-          },
+          profession: '学生' as Profession,
+          hunger: 50,
+          energy: 100,
+          sanity: 100,
+          intelligence: 50,
+          strength: 50,
+          speed: 50,
+          luck: 50,
+          time: 22,
           inventory: [],
           flags: {},
           day: 1,
-          time: 0,
           location: 'dormitory'
         },
         rulePapers: [],

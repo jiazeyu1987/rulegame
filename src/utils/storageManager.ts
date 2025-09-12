@@ -1,4 +1,4 @@
-import { GameSaveData, StorageConfig } from '../types/storage';
+import type { GameSaveData, StorageConfig } from '../types/storage';
 
 export class StorageManager {
   private config: StorageConfig;
@@ -25,19 +25,20 @@ export class StorageManager {
       }
 
       // 获取现有存档
-      const saves = await this.getAllSaves();
+      let saves = await this.getAllSaves();
       
       // 检查存档槽位限制
       if (saves.length >= this.config.maxSaveSlots) {
         // 删除最旧的多余存档，直到达到最大槽位数
         saves.sort((a, b) => a.lastSaveTime - b.lastSaveTime);
         const excessCount = saves.length - this.config.maxSaveSlots + 1; // +1 because we're adding a new save
-        for (let i = 0; i < excessCount; i++) {
-          const oldestSave = saves.shift();
-          if (oldestSave) {
-            const key = `${this.config.storageKey}_${oldestSave.playerName}_${oldestSave.currentDay}`;
-            this.storage.removeItem(key);
-          }
+        const savesToRemove = saves.splice(0, excessCount); // Remove from beginning (oldest)
+        
+        // 实际从localStorage删除这些存档
+        for (const saveToRemove of savesToRemove) {
+          const key = `${this.config.storageKey}_${saveToRemove.playerName}_${saveToRemove.currentDay}`;
+          this.storage.removeItem(key);
+          console.log(`Removed old save to maintain slot limit: ${key}`);
         }
       }
 

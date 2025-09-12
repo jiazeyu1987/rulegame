@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ChinaMapProps, MapInteractionState, ProvinceData } from '../../types/map';
+import type { ChinaMapProps, MapInteractionState, ProvinceData } from '../../types/map';
 import { CHINA_PROVINCES, calculateProvinceColor } from '../../data/chinaProvinces';
 import styles from './ChinaMap.module.css';
 
